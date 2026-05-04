@@ -2,7 +2,7 @@
 
 export function RulesReminder() {
   return (
-    <aside className="rounded-xl border border-slate-700/80 bg-slate-900/70 p-4 text-sm text-slate-300 shadow-inner">
+    <aside className="rounded-xl border border-slate-700/80 bg-slate-950/60 p-4 text-sm text-slate-300 shadow-inner backdrop-blur-md">
       <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500">
         Tactical rules
       </h2>

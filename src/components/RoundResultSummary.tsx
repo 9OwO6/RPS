@@ -14,7 +14,7 @@ export function RoundResultSummary({ summary }: RoundResultSummaryProps) {
   return (
     <section
       aria-label={`Round ${summary.roundCompleted} result`}
-      className="rounded-xl border border-amber-900/40 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.12)]"
+      className="rounded-xl border border-amber-900/40 bg-slate-950/55 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.12)] backdrop-blur-md"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800 pb-3">
         <h2 className="text-lg font-bold tracking-tight text-white">

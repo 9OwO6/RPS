@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 
 import { ActionButtons } from "@/components/ActionButtons";
 import { BattleLog } from "@/components/BattleLog";
@@ -12,6 +13,7 @@ import { RulesReminder } from "@/components/RulesReminder";
 import type { RoundSummary } from "@/components/roundSummary";
 import { buildRoundSummary } from "@/components/roundSummary";
 import { createInitialGameState } from "@/game/initialState";
+import { ASSETS } from "@/lib/assetPaths";
 import type { GamePhase, GameState, InputAction } from "@/game/types";
 import { resolveRound } from "@/game/resolveRound";
 
@@ -149,15 +151,21 @@ export function BattleScreen() {
 
   return (
     <div className="relative min-h-screen">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-90 md:opacity-100"
-      >
-        <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_100%_100%_at_50%_0%,rgba(251,191,36,0.09),transparent)]" />
-        <div className="absolute bottom-0 right-0 h-64 w-64 translate-x-1/4 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.06),transparent)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
+        <Image
+          src={ASSETS.duelArenaBg}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_30%]"
+        />
+        <div className="absolute inset-0 bg-slate-950/74" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/88 via-slate-950/50 to-slate-950/92" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_0%,rgba(251,191,36,0.06),transparent_55%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-6 md:pb-28 md:pt-10">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-6 md:pb-28 md:pt-10">
         <header className="mb-10 flex flex-col gap-6 border-b border-slate-800/90 pb-8 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.45em] text-amber-600/90">
@@ -174,7 +182,7 @@ export function BattleScreen() {
           <button
             type="button"
             onClick={resetMatch}
-            className="rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-2.5 text-sm font-bold uppercase tracking-widest text-slate-200 shadow hover:border-amber-900/70 hover:bg-slate-900"
+            className="rounded-xl border border-slate-700 bg-slate-950/65 px-5 py-2.5 text-sm font-bold uppercase tracking-widest text-slate-200 shadow backdrop-blur-md hover:border-amber-900/70 hover:bg-slate-900/85"
           >
             Hard reset
           </button>
@@ -182,7 +190,7 @@ export function BattleScreen() {
 
         <div className="grid gap-10 lg:grid-cols-[1fr,minmax(15rem,18rem)]">
           <div className="flex min-w-0 flex-col gap-10">
-            <section className="rounded-2xl border border-slate-800 bg-black/35 p-5 shadow-xl md:p-7">
+            <section className="rounded-2xl border border-slate-800/90 bg-slate-950/55 p-5 shadow-xl backdrop-blur-md md:p-7">
               <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800/80 pb-5">
                 <div>
                   <p className="text-[0.65rem] font-bold uppercase tracking-[0.4em] text-slate-500">
@@ -236,7 +244,7 @@ export function BattleScreen() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 shadow-2xl md:p-7">
+            <section className="rounded-2xl border border-slate-800/90 bg-slate-950/55 p-5 shadow-2xl backdrop-blur-md md:p-7">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-500">
                   Maneuver matrix

@@ -18,7 +18,7 @@ export function BattleLog({ logs }: BattleLogProps) {
   return (
     <section
       aria-label="Battle log"
-      className="rounded-2xl border border-slate-700/80 bg-slate-950/40 p-5 shadow-inner"
+      className="rounded-2xl border border-slate-700/85 bg-slate-950/60 p-5 shadow-inner backdrop-blur-md"
     >
       <h2 className="border-b border-slate-800 pb-3 text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
         Battle chronicle
