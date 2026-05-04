@@ -1,11 +1,19 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import { INITIAL_HP } from "@/game/constants";
 import { playerStateLabel, playerStateLongLabel } from "@/components/stateLabels";
 import { ASSETS } from "@/lib/assetPaths";
 import type { PlayerSnapshot, PlayerState } from "@/game/types";
+
+/** Snapshot diff after resolve — drives hit shake / stagger pulse only. */
+export interface PlayerResolveFeedback {
+  roundKey: number;
+  tookDamage: boolean;
+  staggerIntro: boolean;
+}
 
 interface PlayerPanelProps {
   snapshot: PlayerSnapshot;
@@ -13,6 +21,7 @@ interface PlayerPanelProps {
   isActiveTurn: boolean;
   duelSide: "left" | "right";
   maxHp?: number;
+  resolveFeedback?: PlayerResolveFeedback | null;
 }
 
 function stateBadgeColors(state: PlayerState): string {
@@ -38,7 +47,31 @@ export function PlayerPanel({
   isActiveTurn,
   duelSide,
   maxHp = INITIAL_HP,
+  resolveFeedback = null,
 }: PlayerPanelProps) {
+  const [hitShake, setHitShake] = useState(false);
+  const [staggerPulse, setStaggerPulse] = useState(false);
+
+  useEffect(() => {
+    if (!resolveFeedback?.tookDamage || resolveFeedback.roundKey <= 0) {
+      setHitShake(false);
+      return;
+    }
+    setHitShake(true);
+    const t = window.setTimeout(() => setHitShake(false), 520);
+    return () => window.clearTimeout(t);
+  }, [resolveFeedback?.roundKey, resolveFeedback?.tookDamage]);
+
+  useEffect(() => {
+    if (!resolveFeedback?.staggerIntro || resolveFeedback.roundKey <= 0) {
+      setStaggerPulse(false);
+      return;
+    }
+    setStaggerPulse(true);
+    const t = window.setTimeout(() => setStaggerPulse(false), 1150);
+    return () => window.clearTimeout(t);
+  }, [resolveFeedback?.roundKey, resolveFeedback?.staggerIntro]);
+
   const badge = snapshot.id === "P1" ? "P1" : "P2";
   const portraitSrc =
     snapshot.id === "P1" ? ASSETS.portraits.P1 : ASSETS.portraits.P2;
@@ -62,6 +95,7 @@ export function PlayerPanel({
     <article
       className={[
         "relative overflow-hidden rounded-2xl border p-5 shadow-xl backdrop-blur-md transition md:min-h-[13rem]",
+        hitShake ? "hit-shake-panel" : "",
         isActiveTurn
           ? "border-amber-500/60 bg-slate-900/72 shadow-[0_0_22px_-4px_rgba(251,191,36,0.22)] ring-2 ring-amber-500/35 ring-offset-2 ring-offset-slate-950/80"
           : duelSide === "left"
@@ -111,7 +145,7 @@ export function PlayerPanel({
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-950 ring-1 ring-slate-800">
               <div
                 role="presentation"
-                className="h-full rounded-full bg-gradient-to-r from-emerald-800 via-emerald-500 to-amber-400 transition-[width]"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-800 via-emerald-500 to-amber-400 transition-[width] duration-700 ease-out"
                 style={{ width: `${hpPct}%` }}
               />
             </div>
@@ -120,11 +154,24 @@ export function PlayerPanel({
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span
-              className={`rounded-md border px-2.5 py-1 font-mono text-[0.7rem] font-bold uppercase tracking-wider shadow-sm ring-1 ${stateBadgeColors(snapshot.state)}`}
+              className={[
+                "rounded-md border px-2.5 py-1 font-mono text-[0.7rem] font-bold uppercase tracking-wider shadow-sm ring-1",
+                stateBadgeColors(snapshot.state),
+                snapshot.state === "STAGGERED" && staggerPulse
+                  ? "stagger-pulse-once"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               title={playerStateLongLabel(snapshot.state)}
             >
               {playerStateLabel(snapshot.state)}
             </span>
+            {snapshot.state === "STAGGERED" && staggerPulse ? (
+              <span className="rounded border border-red-800/50 bg-red-950/40 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-red-200/95">
+                Staggered!
+              </span>
+            ) : null}
             <span className="text-[0.7rem] text-slate-500">
               {playerStateLongLabel(snapshot.state)}
             </span>

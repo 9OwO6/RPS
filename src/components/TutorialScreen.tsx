@@ -6,6 +6,7 @@ import { ActionButtons } from "@/components/ActionButtons";
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
 import { BattleLog } from "@/components/BattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
+import { DamageFloat } from "@/components/DamageFloat";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { RulesReminder } from "@/components/RulesReminder";
@@ -14,6 +15,7 @@ import { TutorialResult } from "@/components/TutorialResult";
 import { buildRoundSummary } from "@/components/roundSummary";
 import type { GameState, InputAction } from "@/game/types";
 import { TUTORIAL_STEP_COUNT, TUTORIAL_STEPS } from "@/tutorial/tutorialSteps";
+import { getBattleFeedback } from "@/presentation/battleFeedback";
 import {
   cloneGameState,
   inputActionLabel,
@@ -45,6 +47,14 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
     const prev = cloneGameState(step.startingGameState);
     return buildRoundSummary(prev, resolvedState);
   }, [phase, resolvedState, step.startingGameState]);
+
+  const tutorialBattleFeedback = useMemo(() => {
+    if (phase !== "resolved" || !resolvedState) return null;
+    const prev = cloneGameState(step.startingGameState);
+    return getBattleFeedback(prev, resolvedState);
+  }, [phase, resolvedState, step.startingGameState]);
+
+  const tutorialFeedbackKey = resolvedState?.roundNumber ?? 0;
 
   const handleResolve = useCallback(() => {
     if (!selectedAction || phase === "resolved") return;
@@ -133,12 +143,29 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
 
             <section aria-label="Tutorial duelists" className="space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-2">
-                <div className="min-w-0 flex-1">
+                <div className="relative min-w-0 flex-1">
+                  {phase === "resolved" &&
+                  tutorialBattleFeedback &&
+                  tutorialBattleFeedback.p1Damage > 0 ? (
+                    <DamageFloat
+                      key={`t-df-p1-${lessonIndex}-${tutorialFeedbackKey}`}
+                      amount={tutorialBattleFeedback.p1Damage}
+                    />
+                  ) : null}
                   <PlayerPanel
                     duelSide="left"
                     subtitle="You · Player 1"
                     snapshot={displayGame.p1}
                     isActiveTurn
+                    resolveFeedback={
+                      phase === "resolved" && tutorialBattleFeedback
+                        ? {
+                            roundKey: tutorialFeedbackKey,
+                            tookDamage: tutorialBattleFeedback.p1Hit,
+                            staggerIntro: tutorialBattleFeedback.p1BecameStaggered,
+                          }
+                        : null
+                    }
                   />
                 </div>
                 <div className="flex shrink-0 items-center justify-center py-3 lg:w-14 lg:flex-col lg:py-0">
@@ -148,12 +175,29 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                   </span>
                   <span className="hidden h-[2px] w-full max-w-[4rem] bg-gradient-to-l from-transparent via-slate-600 to-transparent lg:block lg:h-full lg:w-[2px] lg:max-h-[6rem] lg:bg-gradient-to-b" />
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className="relative min-w-0 flex-1">
+                  {phase === "resolved" &&
+                  tutorialBattleFeedback &&
+                  tutorialBattleFeedback.p2Damage > 0 ? (
+                    <DamageFloat
+                      key={`t-df-p2-${lessonIndex}-${tutorialFeedbackKey}`}
+                      amount={tutorialBattleFeedback.p2Damage}
+                    />
+                  ) : null}
                   <PlayerPanel
                     duelSide="right"
                     subtitle="Training bot · Player 2"
                     snapshot={displayGame.p2}
                     isActiveTurn={false}
+                    resolveFeedback={
+                      phase === "resolved" && tutorialBattleFeedback
+                        ? {
+                            roundKey: tutorialFeedbackKey,
+                            tookDamage: tutorialBattleFeedback.p2Hit,
+                            staggerIntro: tutorialBattleFeedback.p2BecameStaggered,
+                          }
+                        : null
+                    }
                   />
                 </div>
               </div>

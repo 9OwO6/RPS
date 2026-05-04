@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ActionButtons } from "@/components/ActionButtons";
 import { BattleLog } from "@/components/BattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
+import { DamageFloat } from "@/components/DamageFloat";
 import { GameOverPanel } from "@/components/GameOverPanel";
 import { PassDeviceOverlay } from "@/components/PassDeviceOverlay";
 import { PlayerPanel } from "@/components/PlayerPanel";
@@ -15,6 +16,7 @@ import type { RoundSummary } from "@/components/roundSummary";
 import { buildRoundSummary } from "@/components/roundSummary";
 import { createInitialGameState } from "@/game/initialState";
 import { ASSETS } from "@/lib/assetPaths";
+import { getBattleFeedback } from "@/presentation/battleFeedback";
 import type { GamePhase, GameState, InputAction } from "@/game/types";
 import { resolveRound } from "@/game/resolveRound";
 
@@ -157,6 +159,13 @@ export function BattleScreen() {
     (game.phase === "ROUND_END" || game.phase === "GAME_OVER") &&
     roundSummary !== null;
 
+  const battleFeedback = useMemo(() => {
+    if (!combatFrame) return null;
+    return getBattleFeedback(combatFrame.prev, combatFrame.next);
+  }, [combatFrame]);
+
+  const feedbackRoundKey = combatFrame?.next.roundNumber ?? 0;
+
   return (
     <div className="relative min-h-screen">
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
@@ -224,12 +233,27 @@ export function BattleScreen() {
 
             <section aria-label="Duel pit" className="space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-2">
-                <div className="min-w-0 flex-1">
+                <div className="relative min-w-0 flex-1">
+                  {showRoundLedger && battleFeedback && battleFeedback.p1Damage > 0 ? (
+                    <DamageFloat
+                      key={`df-p1-${feedbackRoundKey}`}
+                      amount={battleFeedback.p1Damage}
+                    />
+                  ) : null}
                   <PlayerPanel
                     duelSide="left"
                     subtitle="Forward line · P1"
                     snapshot={game.p1}
                     isActiveTurn={activePlayer === "P1"}
+                    resolveFeedback={
+                      showRoundLedger && combatFrame && battleFeedback
+                        ? {
+                            roundKey: feedbackRoundKey,
+                            tookDamage: battleFeedback.p1Hit,
+                            staggerIntro: battleFeedback.p1BecameStaggered,
+                          }
+                        : null
+                    }
                   />
                 </div>
 
@@ -241,12 +265,27 @@ export function BattleScreen() {
                   <span className="hidden h-[2px] w-full max-w-[4rem] bg-gradient-to-l from-transparent via-slate-600 to-transparent lg:block lg:h-full lg:w-[2px] lg:max-h-[6rem] lg:bg-gradient-to-b" />
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="relative min-w-0 flex-1">
+                  {showRoundLedger && battleFeedback && battleFeedback.p2Damage > 0 ? (
+                    <DamageFloat
+                      key={`df-p2-${feedbackRoundKey}`}
+                      amount={battleFeedback.p2Damage}
+                    />
+                  ) : null}
                   <PlayerPanel
                     duelSide="right"
                     subtitle="Back line · P2"
                     snapshot={game.p2}
                     isActiveTurn={activePlayer === "P2"}
+                    resolveFeedback={
+                      showRoundLedger && combatFrame && battleFeedback
+                        ? {
+                            roundKey: feedbackRoundKey,
+                            tookDamage: battleFeedback.p2Hit,
+                            staggerIntro: battleFeedback.p2BecameStaggered,
+                          }
+                        : null
+                    }
                   />
                 </div>
               </div>

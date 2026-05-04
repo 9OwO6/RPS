@@ -48,7 +48,7 @@ export function GameOverPanel({ open, winner, onRestart }: GameOverPanelProps) {
       aria-labelledby="game-over-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-5 backdrop-blur-sm"
     >
-      <div className="w-full max-w-lg rounded-2xl border border-amber-900/35 bg-gradient-to-b from-slate-950 via-slate-900 to-black p-10 text-center shadow-[0_0_80px_-20px_rgba(251,191,36,0.45)] md:p-14">
+      <div className="game-over-enter game-over-card-glow w-full max-w-lg rounded-2xl border border-amber-900/40 bg-gradient-to-b from-slate-950 via-slate-900 to-black p-10 text-center md:p-14">
         <p className="text-[0.7rem] font-bold uppercase tracking-[0.55em] text-slate-500">
           Duel resolved
         </p>

@@ -199,3 +199,88 @@ body {
 .combat-fx-shake {
   animation: combat-shake 0.75s ease-in-out both;
 }
+
+/* Phase 3F — battle feedback (presentation only) */
+@keyframes damage-float {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, 0) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -2.5rem) scale(0.9);
+  }
+}
+
+.damage-float-elem {
+  text-shadow:
+    0 0 10px rgba(248, 113, 113, 0.55),
+    0 0 18px rgba(220, 38, 38, 0.25);
+  font-size: 1.2rem;
+  animation: damage-float 1s ease-out forwards;
+}
+
+@keyframes hit-shake-panel {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  22% {
+    transform: translate3d(-3px, 0, 0);
+  }
+  44% {
+    transform: translate3d(3px, 0, 0);
+  }
+  66% {
+    transform: translate3d(-2px, 0, 0);
+  }
+  88% {
+    transform: translate3d(2px, 0, 0);
+  }
+}
+
+.hit-shake-panel {
+  animation: hit-shake-panel 0.52s ease-out 1 both;
+}
+
+@keyframes stagger-pulse-badge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0);
+    filter: brightness(1);
+  }
+  35% {
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.22);
+    filter: brightness(1.12);
+  }
+  65% {
+    box-shadow: 0 0 0 6px rgba(248, 113, 113, 0);
+    filter: brightness(1);
+  }
+}
+
+.stagger-pulse-once {
+  animation: stagger-pulse-badge 1.05s ease-out 1;
+}
+
+@keyframes game-over-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.game-over-enter {
+  animation: game-over-enter 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.game-over-card-glow {
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.12),
+    0 0 60px -12px rgba(251, 191, 36, 0.35),
+    0 0 100px -30px rgba(30, 41, 59, 0.8);
+}
