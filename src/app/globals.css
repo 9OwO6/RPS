@@ -3,5 +3,17 @@
 @tailwind utilities;
 
 body {
-  @apply min-h-screen bg-slate-950 text-slate-100 antialiased;
+  @apply min-h-screen text-slate-100 antialiased;
+  background-color: #020617;
+  background-image:
+    radial-gradient(
+      ellipse 100% 80% at 50% -30%,
+      rgba(30, 41, 59, 0.75),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 100% 100%,
+      rgba(120, 53, 15, 0.08),
+      transparent 50%
+    );
 }

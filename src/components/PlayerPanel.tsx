@@ -1,23 +1,27 @@
 "use client";
 
+import { INITIAL_HP } from "@/game/constants";
+import { playerStateLabel, playerStateLongLabel } from "@/components/stateLabels";
 import type { PlayerSnapshot, PlayerState } from "@/game/types";
 
 interface PlayerPanelProps {
   snapshot: PlayerSnapshot;
   subtitle: string;
   isActiveTurn: boolean;
+  duelSide: "left" | "right";
+  maxHp?: number;
 }
 
-function formatState(state: PlayerState): string {
+function stateBadgeColors(state: PlayerState): string {
   switch (state) {
     case "NORMAL":
-      return "Normal";
+      return "border-emerald-900/70 bg-emerald-950/50 text-emerald-200 ring-emerald-500/20";
     case "CHARGING_LV1":
-      return "Charging Rock (Lv1)";
+      return "border-amber-800/70 bg-amber-950/50 text-amber-200 ring-amber-400/25";
     case "CHARGING_LV2":
-      return "Charging Rock (Lv2)";
+      return "border-orange-800/70 bg-orange-950/55 text-orange-200 ring-orange-400/25";
     case "STAGGERED":
-      return "Staggered";
+      return "border-red-900/80 bg-red-950/55 text-red-200 ring-red-400/35";
     default: {
       const _x: never = state;
       return _x;
@@ -29,50 +33,99 @@ export function PlayerPanel({
   snapshot,
   subtitle,
   isActiveTurn,
+  duelSide,
+  maxHp = INITIAL_HP,
 }: PlayerPanelProps) {
   const badge = snapshot.id === "P1" ? "P1" : "P2";
+  const hpPct = Math.max(
+    0,
+    Math.min(100, Math.round((snapshot.hp / Math.max(maxHp, 1)) * 100)),
+  );
 
   return (
     <article
-      className={`rounded-xl border p-4 shadow-inner transition ${
+      className={[
+        "relative overflow-hidden rounded-2xl border p-5 shadow-xl transition md:min-h-[14rem]",
         isActiveTurn
-          ? "border-amber-500/70 bg-slate-800/90 ring-1 ring-amber-500/30"
-          : "border-slate-700 bg-slate-900/60"
-      }`}
+          ? "border-amber-500/65 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 shadow-[0_0_24px_-4px_rgba(251,191,36,0.25)] ring-2 ring-amber-500/40 ring-offset-2 ring-offset-slate-950"
+          : duelSide === "left"
+            ? "border-slate-700/90 bg-gradient-to-br from-slate-900 via-slate-950 to-black"
+            : "border-slate-700/90 bg-gradient-to-bl from-black via-slate-950 to-slate-900",
+      ].join(" ")}
       aria-current={isActiveTurn ? "step" : undefined}
     >
-      <header className="flex items-baseline justify-between gap-2">
-        <h2 className="text-lg font-bold text-white">
-          {badge}{" "}
-          <span className="font-normal text-slate-400">— {subtitle}</span>
-        </h2>
-        <span className="tabular-nums text-xl font-semibold text-amber-400">
-          {snapshot.hp} HP
-        </span>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-[0.65rem] font-bold uppercase tracking-[0.35em] text-slate-500">
+            {subtitle}
+          </p>
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{badge}</h2>
+        </div>
+
+        <div className="text-right tabular-nums">
+          <p className="text-xs uppercase tracking-wide text-slate-500">HP</p>
+          <p className="text-2xl font-bold text-amber-300">
+            {snapshot.hp}{" "}
+            <span className="text-sm font-semibold text-slate-500">/ {maxHp}</span>
+          </p>
+        </div>
       </header>
-      <p className="mt-2 text-sm text-slate-300">
-        Status:{" "}
-        <span className="font-medium text-slate-100">
-          {formatState(snapshot.state)}
+
+      <div className="mt-4 space-y-1.5">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-950 ring-1 ring-slate-800">
+          <div
+            role="presentation"
+            className="h-full rounded-full bg-gradient-to-r from-emerald-800 via-emerald-500 to-amber-400 transition-[width]"
+            style={{ width: `${hpPct}%` }}
+          />
+        </div>
+        <p className="text-[0.7rem] text-slate-500">{hpPct}% integrity</p>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span
+          className={`rounded-md border px-2.5 py-1 font-mono text-[0.7rem] font-bold uppercase tracking-wider shadow-sm ring-1 ${stateBadgeColors(snapshot.state)}`}
+          title={playerStateLongLabel(snapshot.state)}
+        >
+          {playerStateLabel(snapshot.state)}
         </span>
-      </p>
-      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
-        <div>
-          <dt className="uppercase tracking-wide">Paper streak</dt>
-          <dd className="text-sm font-semibold text-slate-200">
+        <span className="text-[0.7rem] text-slate-500">
+          {playerStateLongLabel(snapshot.state)}
+        </span>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <div className="rounded-lg border border-slate-700/70 bg-black/30 px-3 py-2">
+          <p className="text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">
+            Paper chain
+          </p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-amber-200/95">
             {snapshot.paperStreak}
-          </dd>
+          </p>
+          <p className="text-[0.65rem] text-slate-500">consecutive Papers</p>
         </div>
-        <div>
-          <dt className="uppercase tracking-wide">Scissors streak</dt>
-          <dd className="text-sm font-semibold text-slate-200">
+        <div className="rounded-lg border border-slate-700/70 bg-black/30 px-3 py-2">
+          <p className="text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">
+            Scissors chain
+          </p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-amber-200/95">
             {snapshot.scissorsStreak}
-          </dd>
+          </p>
+          <p className="text-[0.65rem] text-slate-500">consecutive Scissors</p>
         </div>
-      </dl>
+      </div>
+
       {snapshot.state === "STAGGERED" && (
-        <p className="mt-3 rounded-lg bg-red-950/40 px-3 py-2 text-sm text-red-200">
-          You are staggered and will skip this round (no action).
+        <p className="mt-4 rounded-xl border border-red-900/50 bg-red-950/35 px-3 py-2.5 text-sm text-red-100">
+          Break off: you skip this clash — stance recovers afterward unless staggered again.
+        </p>
+      )}
+
+      {isActiveTurn && (
+        <p className="mt-4 text-center text-[0.7rem] font-bold uppercase tracking-[0.3em] text-amber-400/90">
+          Active duelist · choose wisely
         </p>
       )}
     </article>
