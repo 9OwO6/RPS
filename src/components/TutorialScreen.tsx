@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ActionButtons } from "@/components/ActionButtons";
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
 import { BattleLog } from "@/components/BattleLog";
+import { CombatReveal } from "@/components/CombatReveal";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { RulesReminder } from "@/components/RulesReminder";
@@ -196,6 +197,15 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                 onRetry={lastSuccess ? undefined : handleRetry}
                 onNextLesson={lastSuccess ? handleNextLesson : undefined}
                 canAdvance={!atLastLesson}
+              />
+            ) : null}
+
+            {phase === "resolved" && resolvedState && roundSummary ? (
+              <CombatReveal
+                key={`tutorial-${lessonIndex}-${resolvedState.roundNumber}`}
+                prevState={cloneGameState(step.startingGameState)}
+                nextState={resolvedState}
+                replayKey={`tutorial-${lessonIndex}-${resolvedState.roundNumber}`}
               />
             ) : null}
 

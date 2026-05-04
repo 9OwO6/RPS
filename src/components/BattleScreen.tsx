@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import { ActionButtons } from "@/components/ActionButtons";
 import { BattleLog } from "@/components/BattleLog";
+import { CombatReveal } from "@/components/CombatReveal";
 import { GameOverPanel } from "@/components/GameOverPanel";
 import { PassDeviceOverlay } from "@/components/PassDeviceOverlay";
 import { PlayerPanel } from "@/components/PlayerPanel";
@@ -50,12 +51,17 @@ export function BattleScreen() {
   const [p1Pick, setP1Pick] = useState<InputAction | null>(null);
   const [p2Pick, setP2Pick] = useState<InputAction | null>(null);
   const [roundSummary, setRoundSummary] = useState<RoundSummary | null>(null);
+  const [combatFrame, setCombatFrame] = useState<{
+    prev: GameState;
+    next: GameState;
+  } | null>(null);
 
   const resetMatch = useCallback(() => {
     setGame(createInitialGameState("P1_PICK"));
     setP1Pick(null);
     setP2Pick(null);
     setRoundSummary(null);
+    setCombatFrame(null);
   }, []);
 
   const handleP1Confirm = useCallback(() => {
@@ -95,6 +101,7 @@ export function BattleScreen() {
     );
     const summary = buildRoundSummary(g, next);
     if (summary) setRoundSummary(summary);
+    setCombatFrame({ prev: g, next });
     setGame(next);
   }, [p1Pick, p2Pick]);
 
@@ -107,6 +114,7 @@ export function BattleScreen() {
 
   const handleNextRound = useCallback(() => {
     setRoundSummary(null);
+    setCombatFrame(null);
     setGame((g) => {
       if (g.phase !== "ROUND_END") return g;
       return { ...g, phase: "P1_PICK" };
@@ -340,6 +348,15 @@ export function BattleScreen() {
                 )}
               </div>
             </section>
+
+            {showRoundLedger && combatFrame && roundSummary ? (
+              <CombatReveal
+                key={combatFrame.next.roundNumber}
+                prevState={combatFrame.prev}
+                nextState={combatFrame.next}
+                replayKey={combatFrame.next.roundNumber}
+              />
+            ) : null}
 
             {showRoundLedger && roundSummary ? (
               <RoundResultSummary summary={roundSummary} />

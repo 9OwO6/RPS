@@ -17,3 +17,185 @@ body {
       transparent 50%
     );
 }
+
+/* Phase 3E — lightweight combat reveal motion (presentation only) */
+@keyframes combat-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes combat-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.combat-in-left {
+  animation: combat-in-left 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.combat-in-right {
+  animation: combat-in-right 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes combat-slash-slice {
+  0% {
+    transform: translate(-38%, 12%) rotate(-18deg) scale(0.88);
+    opacity: 0.55;
+  }
+  55% {
+    transform: translate(6%, -4%) rotate(4deg) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(42%, -12%) rotate(14deg) scale(1);
+    opacity: 0.88;
+  }
+}
+
+.combat-fx-scissors-slash {
+  animation: combat-slash-slice 1s cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+
+@keyframes combat-paper-wrap {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.12);
+    filter: brightness(1.2);
+  }
+}
+
+.combat-fx-paper-wrap {
+  animation: combat-paper-wrap 1.05s ease-in-out both;
+}
+
+@keyframes combat-rock-drop {
+  0% {
+    transform: translateY(-52%) scale(1.08);
+    opacity: 0.75;
+  }
+  58% {
+    transform: translateY(8%) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.combat-fx-rock-drop {
+  animation: combat-rock-drop 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes combat-chip {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  40% {
+    transform: rotate(-14deg) scale(1.08);
+  }
+  78% {
+    transform: rotate(10deg) scale(0.96);
+  }
+}
+
+.combat-fx-chip {
+  animation: combat-chip 0.95s ease-in-out both;
+}
+
+@keyframes combat-rock-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.45));
+  }
+}
+
+.combat-fx-rock-pulse {
+  animation: combat-rock-pulse 1.1s ease-in-out 2 both;
+}
+
+@keyframes combat-rock-pulse-strong {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(1.12) rotate(-5deg);
+    filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.55));
+  }
+}
+
+.combat-fx-rock-hold {
+  animation: combat-rock-pulse-strong 1.15s ease-in-out 2 both;
+}
+
+@keyframes combat-mirror-clash {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.92;
+  }
+}
+
+.combat-fx-mirror {
+  animation: combat-mirror-clash 0.85s ease-in-out 2 both;
+}
+
+@keyframes combat-neutral {
+  from {
+    opacity: 0.4;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.combat-fx-neutral {
+  animation: combat-neutral 0.9s ease-out both;
+}
+
+@keyframes combat-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-4px);
+  }
+  65% {
+    transform: translateX(4px);
+  }
+}
+
+.combat-fx-shake {
+  animation: combat-shake 0.75s ease-in-out both;
+}

@@ -5,6 +5,10 @@ import {
   describeStateArrow,
   type RoundSummary,
 } from "@/components/roundSummary";
+import {
+  effectiveActionBadgeClass,
+  effectiveActionBadgeLetter,
+} from "@/presentation/actionColors";
 
 interface RoundResultSummaryProps {
   summary: RoundSummary;
@@ -31,16 +35,30 @@ export function RoundResultSummary({ summary }: RoundResultSummaryProps) {
           <dt className="text-xs uppercase tracking-wide text-slate-500">
             Player 1 maneuver
           </dt>
-          <dd className="mt-1 text-sm font-medium text-slate-100">
-            {describeEffectiveAction("P1", summary.p1Effective)}
+          <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-medium text-slate-100">
+            <span
+              className={effectiveActionBadgeClass(summary.p1Effective)}
+              title="Action color key"
+              aria-label={`Action key ${effectiveActionBadgeLetter(summary.p1Effective)}`}
+            >
+              {effectiveActionBadgeLetter(summary.p1Effective)}
+            </span>
+            <span>{describeEffectiveAction("P1", summary.p1Effective)}</span>
           </dd>
         </div>
         <div className="rounded-lg border border-slate-700/90 bg-black/25 p-3">
           <dt className="text-xs uppercase tracking-wide text-slate-500">
             Player 2 maneuver
           </dt>
-          <dd className="mt-1 text-sm font-medium text-slate-100">
-            {describeEffectiveAction("P2", summary.p2Effective)}
+          <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-medium text-slate-100">
+            <span
+              className={effectiveActionBadgeClass(summary.p2Effective)}
+              title="Action color key"
+              aria-label={`Action key ${effectiveActionBadgeLetter(summary.p2Effective)}`}
+            >
+              {effectiveActionBadgeLetter(summary.p2Effective)}
+            </span>
+            <span>{describeEffectiveAction("P2", summary.p2Effective)}</span>
           </dd>
         </div>
       </dl>

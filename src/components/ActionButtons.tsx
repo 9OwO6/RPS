@@ -4,6 +4,13 @@ import Image from "next/image";
 
 import { ACTION_TAGLINES, getActionDisabledReason } from "@/components/actionUx";
 import { ASSETS } from "@/lib/assetPaths";
+import {
+  inputActionCardBaseClasses,
+  inputActionCardDisabledShellClasses,
+  inputActionCardHoverClasses,
+  inputActionCardSelectedClasses,
+  inputActionManeuverLabelHintClass,
+} from "@/presentation/actionColors";
 import type { InputAction, PlayerState } from "@/game/types";
 import { getAvailableInputActions } from "@/game/actionAvailability";
 
@@ -63,13 +70,17 @@ export function ActionButtons({
             disabled={!playable}
             onClick={() => onSelect(action)}
             className={[
-              "flex min-h-[8.75rem] flex-col rounded-xl border px-4 py-3 text-left shadow-md transition outline-none ring-offset-2 ring-offset-slate-950/90",
+              "flex min-h-[8.75rem] flex-col rounded-xl border px-4 py-3 text-left shadow-md outline-none ring-offset-2 ring-offset-slate-950/90 transition-all duration-300 ease-out",
               "focus-visible:ring-2 focus-visible:ring-amber-400/70",
               selected === action && playable
-                ? "border-amber-400 bg-amber-950/40 text-amber-50 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.35)]"
+                ? inputActionCardSelectedClasses(action)
                 : playable
-                  ? "cursor-pointer border-slate-600 bg-slate-800/90 text-slate-100 hover:border-amber-500/50 hover:bg-slate-800"
-                  : "cursor-not-allowed border-slate-800 bg-slate-950/85 text-slate-500",
+                  ? [
+                      "cursor-pointer text-slate-100",
+                      inputActionCardBaseClasses(),
+                      inputActionCardHoverClasses(action),
+                    ].join(" ")
+                  : inputActionCardDisabledShellClasses(),
             ].join(" ")}
           >
             <div className="flex items-start gap-3">
@@ -86,7 +97,14 @@ export function ActionButtons({
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-500">
+                <span
+                  className={[
+                    "text-[0.65rem] font-bold uppercase tracking-[0.2em]",
+                    playable
+                      ? inputActionManeuverLabelHintClass(action)
+                      : "text-slate-500",
+                  ].join(" ")}
+                >
                   Maneuver
                 </span>
                 <span className="mt-1 block text-lg font-bold leading-tight text-white">
