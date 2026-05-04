@@ -15,7 +15,12 @@ export default function Home() {
     case "START":
       return <StartScreen onSelectMode={setMode} />;
     case "TUTORIAL":
-      return <TutorialScreen onBack={() => setMode("START")} />;
+      return (
+        <TutorialScreen
+          onBack={() => setMode("START")}
+          onSkipToDuel={() => setMode("LOCAL_DUEL")}
+        />
+      );
     case "RULES":
       return <RulesScreen onBack={() => setMode("START")} />;
     case "LOCAL_DUEL":
