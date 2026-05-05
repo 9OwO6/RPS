@@ -214,10 +214,17 @@ body {
 
 .damage-float-elem {
   text-shadow:
-    0 0 10px rgba(248, 113, 113, 0.55),
-    0 0 18px rgba(220, 38, 38, 0.25);
-  font-size: 1.2rem;
-  animation: damage-float 1s ease-out forwards;
+    0 0 8px rgba(248, 113, 113, 0.42),
+    0 0 14px rgba(220, 38, 38, 0.18);
+  font-size: 1.15rem;
+  animation: damage-float 0.95s ease-out forwards;
+}
+
+/* Pop-style float (preferred on duel screen; avoids double-transform) */
+.damage-float-base {
+  text-shadow:
+    0 0 8px rgba(248, 113, 113, 0.42),
+    0 0 14px rgba(220, 38, 38, 0.18);
 }
 
 @keyframes hit-shake-panel {
@@ -283,4 +290,392 @@ body {
     0 0 0 1px rgba(251, 191, 36, 0.12),
     0 0 60px -12px rgba(251, 191, 36, 0.35),
     0 0 100px -30px rgba(30, 41, 59, 0.8);
+}
+
+/* Phase 3H — muted invalid / stagger center */
+@keyframes combat-muted-dip-kf {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(0.985);
+  }
+}
+
+.combat-fx-muted-dip {
+  animation: combat-muted-dip-kf 0.7s ease-in-out both;
+}
+
+/* Card lunge toward center (P1 from left, P2 from right) */
+@keyframes combat-tile-lunge-p1-kf {
+  0% {
+    transform: translateX(-0.35rem) scale(0.94);
+  }
+  45% {
+    transform: translateX(0.55rem) scale(1.04);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-tile-lunge-p2-kf {
+  0% {
+    transform: translateX(0.35rem) scale(0.94);
+  }
+  45% {
+    transform: translateX(-0.55rem) scale(1.04);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-tile-lunge-p1-strong-kf {
+  0% {
+    transform: translateX(-0.5rem) scale(0.9);
+  }
+  40% {
+    transform: translateX(0.85rem) scale(1.08);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-tile-lunge-p2-strong-kf {
+  0% {
+    transform: translateX(0.5rem) scale(0.9);
+  }
+  40% {
+    transform: translateX(-0.85rem) scale(1.08);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-tile-lunge-p1-chip-kf {
+  0% {
+    transform: translateX(-0.2rem) scale(0.97);
+  }
+  50% {
+    transform: translateX(0.35rem) scale(1.02);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-tile-lunge-p2-chip-kf {
+  0% {
+    transform: translateX(0.2rem) scale(0.97);
+  }
+  50% {
+    transform: translateX(-0.35rem) scale(1.02);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+.combat-tile-lunge-p1 {
+  animation: combat-tile-lunge-p1-kf 0.88s cubic-bezier(0.33, 1.1, 0.45, 1) both;
+}
+
+.combat-tile-lunge-p2 {
+  animation: combat-tile-lunge-p2-kf 0.88s cubic-bezier(0.33, 1.1, 0.45, 1) both;
+}
+
+.combat-tile-lunge-p1-strong {
+  animation: combat-tile-lunge-p1-strong-kf 0.95s cubic-bezier(0.28, 1.15, 0.4, 1) both;
+}
+
+.combat-tile-lunge-p2-strong {
+  animation: combat-tile-lunge-p2-strong-kf 0.95s cubic-bezier(0.28, 1.15, 0.4, 1) both;
+}
+
+.combat-tile-lunge-p1-chip {
+  animation: combat-tile-lunge-p1-chip-kf 0.75s ease-out both;
+}
+
+.combat-tile-lunge-p2-chip {
+  animation: combat-tile-lunge-p2-chip-kf 0.75s ease-out both;
+}
+
+/* Paper counter halo */
+@keyframes paper-counter-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    filter: brightness(1);
+  }
+  45% {
+    box-shadow:
+      0 0 0 6px rgba(220, 38, 38, 0.18),
+      0 0 22px rgba(248, 113, 113, 0.25);
+    filter: brightness(1.08);
+  }
+}
+
+.paper-counter-halo {
+  border-radius: 0.75rem;
+  animation: paper-counter-ring 1.05s ease-out both;
+}
+
+/* Scissors slash trace */
+.scissors-slash-host::after {
+  content: "";
+  position: absolute;
+  inset: 18% 8% 22% 8%;
+  border-radius: 2px;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(248, 250, 252, 0.55) 50%,
+    transparent 60%
+  );
+  opacity: 0;
+  animation: scissors-slash-fade 0.85s ease-out 0.12s both;
+  pointer-events: none;
+}
+
+@keyframes scissors-slash-fade {
+  0% {
+    opacity: 0;
+    transform: translateX(-30%) rotate(-8deg) scaleX(0.4);
+  }
+  35% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(35%) rotate(6deg) scaleX(1);
+  }
+}
+
+/* Chip sparks */
+.chip-spark-host::before,
+.chip-spark-host::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(248, 250, 252, 0.75);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip-spark-host::before {
+  top: 12%;
+  right: 18%;
+  animation: chip-spark-pop 0.55s ease-out 0.2s both;
+}
+
+.chip-spark-host::after {
+  bottom: 20%;
+  left: 22%;
+  animation: chip-spark-pop 0.6s ease-out 0.32s both;
+}
+
+@keyframes chip-spark-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-6px);
+  }
+}
+
+/* Rock charge — cold blue emphasis */
+@keyframes combat-rock-pulse-blue {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.45));
+  }
+}
+
+.combat-fx-rock-pulse {
+  animation: combat-rock-pulse-blue 1.1s ease-in-out 2 both;
+}
+
+@keyframes combat-rock-pulse-strong-blue {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(1.12) rotate(-4deg);
+    filter: drop-shadow(0 0 22px rgba(14, 165, 233, 0.55));
+  }
+}
+
+.combat-fx-rock-hold {
+  animation: combat-rock-pulse-strong-blue 1.15s ease-in-out 2 both;
+}
+
+/* Damage float tiers + pop */
+@keyframes damage-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.72);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -2px) scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -2.75rem) scale(0.88);
+  }
+}
+
+.damage-pop-elem {
+  animation: damage-pop 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.damage-float-tier-chip {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.damage-float-tier-standard {
+  font-size: 1.1rem;
+}
+
+.damage-float-tier-strong {
+  font-size: 1.2rem;
+}
+
+.damage-float-tier-heavy {
+  font-size: 1.35rem;
+}
+
+.damage-float-tier-max {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.damage-float-accent-scissors {
+  text-shadow:
+    0 0 6px rgba(248, 250, 252, 0.35),
+    0 0 10px rgba(248, 113, 113, 0.45),
+    0 0 16px rgba(220, 38, 38, 0.2);
+}
+
+.damage-float-accent-rock {
+  text-shadow:
+    0 0 8px rgba(56, 189, 248, 0.35),
+    0 0 12px rgba(248, 113, 113, 0.42),
+    0 0 18px rgba(220, 38, 38, 0.2);
+}
+
+.damage-float-accent-paper {
+  text-shadow:
+    0 0 8px rgba(248, 113, 113, 0.4),
+    0 0 14px rgba(220, 38, 38, 0.35),
+    0 0 20px rgba(127, 29, 29, 0.2);
+}
+
+@keyframes stagger-callout-kf {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+.stagger-callout {
+  animation: stagger-callout-kf 0.9s ease-in-out 1;
+}
+
+@keyframes hit-shake-panel-light-kf {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-1px, 0, 0);
+  }
+}
+
+.hit-shake-panel-light {
+  animation: hit-shake-panel-light-kf 0.48s ease-out 1 both;
+}
+
+@keyframes hit-shake-panel-heavy-kf {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  18% {
+    transform: translate3d(-6px, 1px, 0);
+  }
+  40% {
+    transform: translate3d(6px, -1px, 0);
+  }
+  62% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  84% {
+    transform: translate3d(3px, 0, 0);
+  }
+}
+
+.hit-shake-panel-heavy {
+  animation: hit-shake-panel-heavy-kf 0.58s ease-out 1 both;
+}
+
+.combat-stage-well {
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Hero portrait — edge vignette + outer depth (replaces utility box-shadow) */
+.hero-portrait-face-right {
+  box-shadow:
+    inset 12px 0 32px rgba(0, 0, 0, 0.48),
+    inset 0 -18px 40px rgba(0, 0, 0, 0.55),
+    0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+.hero-portrait-face-left {
+  box-shadow:
+    inset -12px 0 32px rgba(0, 0, 0, 0.48),
+    inset 0 -18px 40px rgba(0, 0, 0, 0.55),
+    0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Desktop battle HUD — scroll clash / ledger without shifting layout */
+.battle-hud-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.battle-hud-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.battle-hud-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
 }

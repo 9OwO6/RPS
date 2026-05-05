@@ -3,6 +3,8 @@
 import type { AppMode } from "@/lib/appMode";
 
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
+import { QuickRulesBlurb } from "@/components/QuickRulesBlurb";
+import { SoundToggle } from "@/components/SoundToggle";
 
 interface StartScreenProps {
   onSelectMode: (mode: Exclude<AppMode, "START">) => void;
@@ -13,7 +15,13 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
     <div className="relative z-10 flex min-h-screen flex-col">
       <ArenaBackdrop />
 
-      <main className="relative mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-12 sm:py-16">
+      <div className="pointer-events-none absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+        <div className="pointer-events-auto">
+          <SoundToggle />
+        </div>
+      </div>
+
+      <main className="relative mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-12 pb-16 sm:py-16">
         <header className="text-center">
           <p className="text-[0.65rem] font-bold uppercase tracking-[0.45em] text-amber-600/90">
             Pass-and-play arena
@@ -22,13 +30,15 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
             RPS Tactical Duel
           </h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400">
-            Martial card timing—read momentum, seal picks, and cross blades on
-            resolve.
+            Same-table duel: seal picks, pass the device, then resolve — no
+            peeking at the other fighter&apos;s card until the round locks in.
           </p>
         </header>
 
+        <QuickRulesBlurb className="mt-10" />
+
         <nav
-          className="mt-12 flex flex-col gap-3"
+          className="mt-8 flex flex-col gap-3 sm:gap-3.5"
           aria-label="Main menu"
         >
           <button
@@ -37,6 +47,9 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
             className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
             Tutorial
+            <span className="mt-1 block text-xs font-normal text-slate-400">
+              Guided drills — engine-accurate, step by step
+            </span>
           </button>
           <button
             type="button"
@@ -44,6 +57,9 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
             className="rounded-xl border border-amber-700/50 bg-amber-950/35 px-5 py-4 text-left text-base font-bold text-amber-50 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)] backdrop-blur-md transition hover:border-amber-500/60 hover:bg-amber-950/50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
             Local Duel
+            <span className="mt-1 block text-xs font-normal text-amber-200/70">
+              Pass-and-play · two humans, one device
+            </span>
           </button>
           <button
             type="button"
@@ -51,19 +67,21 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
             className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
             Rules
+            <span className="mt-1 block text-xs font-normal text-slate-400">
+              Full tactical reference
+            </span>
           </button>
 
           <div className="my-2 border-t border-slate-800/80 pt-2" />
 
           <button
             type="button"
-            disabled
-            aria-disabled="true"
-            className="cursor-not-allowed rounded-xl border border-slate-800 bg-slate-950/50 px-5 py-4 text-left text-base font-bold text-slate-600 opacity-80"
+            onClick={() => onSelectMode("VS_AI")}
+            className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
             Player vs AI
-            <span className="mt-1 block text-xs font-normal text-slate-600">
-              Coming soon
+            <span className="mt-1 block text-xs font-normal text-slate-400">
+              Basic training bot opponent
             </span>
           </button>
           <button

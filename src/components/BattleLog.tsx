@@ -6,27 +6,27 @@ import type { RoundLog } from "@/game/types";
 
 interface BattleLogProps {
   logs: RoundLog[];
+  /** Omit outer chrome when nested (e.g. inside a collapsible summary). */
+  embedded?: boolean;
 }
 
-export function BattleLog({ logs }: BattleLogProps) {
+export function BattleLog({ logs, embedded = false }: BattleLogProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
   }, [logs]);
 
-  return (
-    <section
-      aria-label="Battle log"
-      className="rounded-2xl border border-slate-700/85 bg-slate-950/60 p-5 shadow-inner backdrop-blur-md"
-    >
-      <h2 className="border-b border-slate-800 pb-3 text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
-        Battle chronicle
-      </h2>
-      <div className="mt-4 max-h-[22rem] space-y-6 overflow-y-auto pr-2 text-sm text-slate-200 md:max-h-[28rem]">
+  const scrollClass = embedded
+    ? "max-h-[min(12rem,40vh)] space-y-4 overflow-y-auto pr-2 text-xs text-slate-200 sm:max-h-[min(14rem,45vh)] sm:text-sm"
+    : "mt-4 max-h-[min(14rem,38vh)] space-y-6 overflow-y-auto pr-2 text-sm text-slate-200 sm:max-h-[min(18rem,42vh)] md:max-h-[min(20rem,45vh)]";
+
+  const inner = (
+    <div className={scrollClass}>
         {logs.length === 0 ? (
-          <p className="py-4 text-center text-slate-600">
-            No rounds recorded yet — the field is silent.
+          <p className="px-2 py-6 text-center text-sm leading-relaxed text-slate-500">
+            No chronicle entries yet. After you resolve a round, the narrative
+            lines for that encounter appear here.
           </p>
         ) : (
           logs.map((entry, idx) => (
@@ -51,7 +51,26 @@ export function BattleLog({ logs }: BattleLogProps) {
           ))
         )}
         <div ref={endRef} className="h-px shrink-0" aria-hidden />
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div aria-label="Battle log entries" className="min-h-0">
+        {inner}
       </div>
+    );
+  }
+
+  return (
+    <section
+      aria-label="Battle log"
+      className="rounded-2xl border border-slate-700/85 bg-slate-950/60 p-5 shadow-inner backdrop-blur-md"
+    >
+      <h2 className="border-b border-slate-800 pb-3 text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
+        Battle chronicle
+      </h2>
+      {inner}
     </section>
   );
 }

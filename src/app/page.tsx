@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
+import { SoundProvider } from "@/audio/SoundContext";
 import type { AppMode } from "@/lib/appMode";
 import { BattleScreen } from "@/components/BattleScreen";
 import { RulesScreen } from "@/components/RulesScreen";
@@ -11,27 +12,41 @@ import { TutorialScreen } from "@/components/TutorialScreen";
 export default function Home() {
   const [mode, setMode] = useState<AppMode>("START");
 
+  let content: ReactNode;
   switch (mode) {
     case "START":
-      return <StartScreen onSelectMode={setMode} />;
+      content = <StartScreen onSelectMode={setMode} />;
+      break;
     case "TUTORIAL":
-      return (
+      content = (
         <TutorialScreen
           onBack={() => setMode("START")}
           onSkipToDuel={() => setMode("LOCAL_DUEL")}
         />
       );
+      break;
     case "RULES":
-      return <RulesScreen onBack={() => setMode("START")} />;
+      content = <RulesScreen onBack={() => setMode("START")} />;
+      break;
     case "LOCAL_DUEL":
-      return (
-        <main className="min-h-screen pb-16 pt-8">
-          <BattleScreen />
+      content = (
+        <main className="min-h-screen pb-16 pt-8 lg:overflow-hidden lg:pb-0 lg:pt-0">
+          <BattleScreen battleMode="LOCAL_2P" />
         </main>
       );
+      break;
+    case "VS_AI":
+      content = (
+        <main className="min-h-screen pb-16 pt-8 lg:overflow-hidden lg:pb-0 lg:pt-0">
+          <BattleScreen battleMode="VS_AI" />
+        </main>
+      );
+      break;
     default: {
       const _x: never = mode;
-      return _x;
+      content = _x;
     }
   }
+
+  return <SoundProvider>{content}</SoundProvider>;
 }

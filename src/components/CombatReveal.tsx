@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
+import { combatAnimationToSoundKey } from "@/audio/combatSoundMap";
+import { useSound } from "@/audio/SoundContext";
 import { ASSETS } from "@/lib/assetPaths";
 import type { EffectiveAction, GameState } from "@/game/types";
 import {
@@ -12,6 +14,10 @@ import {
   getCombatCaption,
   getEffectiveActionLabel,
 } from "@/presentation/combatAnimation";
+import {
+  getEffectiveTileLunge,
+  getEffectiveTileLungeClass,
+} from "@/presentation/combatMotion";
 import {
   clashIconGlowPaper,
   clashIconGlowRock,
@@ -41,7 +47,7 @@ function centerMotionClass(type: CombatAnimationType): string {
       return "combat-fx-neutral";
     case "STAGGER_SKIP":
     case "INVALID":
-      return "combat-fx-shake";
+      return "combat-fx-muted-dip";
     default: {
       const _e: never = type;
       return _e;
@@ -53,27 +59,35 @@ function EffectiveTile({
   side,
   action,
   animSide,
+  animType,
+  nextState,
 }: {
   side: "P1" | "P2";
   action: EffectiveAction;
   animSide: "left" | "right";
+  animType: CombatAnimationType;
+  nextState: GameState;
 }) {
   const path = getActionIconPathFromEffectiveAction(action);
   const label = getEffectiveActionLabel(action);
   const slide = animSide === "left" ? "combat-in-left" : "combat-in-right";
+  const lungeClass = getEffectiveTileLungeClass(
+    side,
+    getEffectiveTileLunge(side, animType, nextState),
+  );
 
   const tileBorder = effectiveActionTileBorderClass(action);
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 rounded-xl border bg-slate-950/75 p-4 shadow-inner backdrop-blur-sm ${tileBorder} ${slide}`}
+      className={`flex flex-col items-center gap-2 rounded-xl border bg-slate-950/75 p-4 shadow-inner backdrop-blur-sm lg:gap-1 lg:p-2 ${tileBorder} ${slide} ${lungeClass}`}
     >
       <span className="text-[0.6rem] font-bold uppercase tracking-[0.35em] text-slate-500">
         {side}
       </span>
       {path ? (
         <div
-          className={`relative h-16 w-16 p-1 ${effectiveActionIconGlowClass(action)}`}
+          className={`relative h-16 w-16 p-1 lg:h-12 lg:w-12 ${effectiveActionIconGlowClass(action)}`}
         >
           <Image
             src={path}
@@ -181,7 +195,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowPaper()}`}
           />
         </div>
-        <div className={`relative z-10 h-16 w-16 ${motion}`}>
+        <div className={`scissors-slash-host relative z-10 h-16 w-16 ${motion}`}>
           <Image
             src={scissors}
             alt=""
@@ -204,7 +218,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowRock()}`}
           />
         </div>
-        <div className={`relative z-10 -ml-4 h-16 w-16 ${motion}`}>
+        <div className={`paper-counter-halo relative z-10 -ml-4 h-16 w-16 ${motion}`}>
           <Image
             src={paper}
             alt=""
@@ -242,7 +256,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
   if (type === "SCISSORS_CHIPS_ROCK_CHARGE") {
     return (
       <div className="relative flex min-h-[5.5rem] w-full max-w-[14rem] items-center justify-center gap-2">
-        <div className={`relative h-14 w-14 ${motion}`}>
+        <div className={`chip-spark-host relative h-14 w-14 ${motion}`}>
           <Image
             src={scissors}
             alt=""
@@ -321,6 +335,7 @@ export function CombatReveal({
   nextState,
   replayKey,
 }: CombatRevealProps) {
+  const { play } = useSound();
   const le = nextState.lastEffectiveActions;
   const animType = useMemo(
     () => getCombatAnimationType(prevState, nextState),
@@ -328,32 +343,49 @@ export function CombatReveal({
   );
   const caption = useMemo(() => getCombatCaption(animType), [animType]);
 
+  useEffect(() => {
+    const key = combatAnimationToSoundKey(animType);
+    if (key) play(key);
+  }, [replayKey, animType, play]);
+
   if (!le) return null;
 
   return (
     <section
       id={`combat-reveal-${replayKey}`}
       aria-label="Combat reveal"
-      className="rounded-xl border border-amber-900/35 bg-slate-950/60 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.1)] backdrop-blur-md"
+      className="rounded-2xl border border-amber-900/40 bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-black/40 p-4 shadow-[0_0_40px_-12px_rgba(245,158,11,0.15)] backdrop-blur-md sm:p-5 lg:p-2.5 lg:shadow-md"
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800/80 pb-3">
-        <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-amber-500/90">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800/80 pb-2.5 lg:pb-1.5">
+        <h2 className="text-xs font-bold uppercase tracking-[0.28em] text-amber-500/95 sm:text-sm lg:text-[0.65rem]">
           Clash tableau
         </h2>
-        <span className="text-[0.65rem] text-slate-500">
-          Round {nextState.roundNumber - 1} resolve
+        <span className="text-[0.65rem] text-slate-500 lg:text-[0.6rem]">
+          Round {nextState.roundNumber - 1} · effective maneuvers
         </span>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 items-stretch gap-6 md:grid-cols-[1fr_minmax(10rem,14rem)_1fr] md:gap-4">
-        <EffectiveTile side="P1" action={le.p1} animSide="left" />
-        <div className="flex flex-col items-center justify-center gap-2 border-y border-slate-800/60 py-4 md:border-x md:border-y-0 md:py-0">
+      <div className="mt-4 grid grid-cols-1 items-stretch gap-5 md:grid-cols-[1fr_minmax(11rem,15rem)_1fr] md:gap-3 lg:mt-2 lg:grid-cols-[1fr_minmax(8.5rem,12rem)_1fr] lg:gap-2">
+        <EffectiveTile
+          side="P1"
+          action={le.p1}
+          animSide="left"
+          animType={animType}
+          nextState={nextState}
+        />
+        <div className="combat-stage-well flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-800/70 bg-black/25 py-5 md:border md:py-4 lg:py-2.5">
           <ClashCenter type={animType} />
         </div>
-        <EffectiveTile side="P2" action={le.p2} animSide="right" />
+        <EffectiveTile
+          side="P2"
+          action={le.p2}
+          animSide="right"
+          animType={animType}
+          nextState={nextState}
+        />
       </div>
 
-      <p className="mt-5 text-center text-sm font-medium leading-snug text-slate-200">
+      <p className="mt-4 text-center text-xs font-medium leading-snug text-slate-200 sm:text-sm lg:mt-2 lg:text-[0.7rem]">
         {caption}
       </p>
     </section>

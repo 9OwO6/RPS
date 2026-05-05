@@ -1,5 +1,7 @@
 "use client";
 
+import { useSound } from "@/audio/SoundContext";
+
 interface PassDeviceOverlayProps {
   open: boolean;
   onContinueAsP2: () => void;
@@ -9,6 +11,8 @@ export function PassDeviceOverlay({
   open,
   onContinueAsP2,
 }: PassDeviceOverlayProps) {
+  const { play } = useSound();
+
   if (!open) return null;
 
   return (
@@ -53,8 +57,8 @@ export function PassDeviceOverlay({
           <li className="flex gap-3">
             <span className="shrink-0 font-mono text-amber-500">03</span>
             <span>
-              Only Player 2 should tap continue below once they&apos;re seated
-              and ready to choose blindly.
+              Only Player 2 should tap the button below once they have the device
+              and are ready to pick without seeing Player 1&apos;s maneuver.
             </span>
           </li>
         </ul>
@@ -62,9 +66,12 @@ export function PassDeviceOverlay({
         <button
           type="button"
           className="mt-10 w-full rounded-xl bg-amber-500 px-4 py-3.5 text-base font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400"
-          onClick={onContinueAsP2}
+          onClick={() => {
+            play("UI_CONFIRM");
+            onContinueAsP2();
+          }}
         >
-          I am Player 2 — continue blindly
+          I&apos;m Player 2 — continue to blind pick
         </button>
       </div>
     </div>

@@ -64,6 +64,11 @@ export function GameOverPanel({ open, winner, onRestart }: GameOverPanelProps) {
           {outcomeLabel(winner)}
         </p>
 
+        <p className="mt-4 text-sm text-slate-500">
+          Restart returns both fighters to full HP and opens a fresh round-one
+          pick for Player 1.
+        </p>
+
         <button
           type="button"
           className="mt-12 w-full rounded-xl border-2 border-amber-900/70 bg-transparent px-4 py-3.5 text-sm font-black uppercase tracking-[0.3em] text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/40 hover:text-white"

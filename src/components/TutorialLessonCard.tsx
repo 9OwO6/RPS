@@ -28,6 +28,11 @@ export function TutorialLessonCard({
       </h1>
       <p className="mt-3 text-sm font-semibold text-amber-200/90">{objective}</p>
       <p className="mt-4 text-sm leading-relaxed text-slate-300">{explanation}</p>
+      <p className="mt-5 border-t border-slate-800/80 pt-4 text-xs leading-relaxed text-slate-500">
+        Pick your maneuver, then tap <span className="font-semibold text-slate-400">Resolve drill</span>.
+        The bot&apos;s action stays hidden until you resolve — same discipline as
+        the local duel.
+      </p>
     </section>
   );
 }

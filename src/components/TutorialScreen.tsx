@@ -1,21 +1,28 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useSound } from "@/audio/SoundContext";
 import { ActionButtons } from "@/components/ActionButtons";
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
-import { BattleLog } from "@/components/BattleLog";
+import { CollapsibleBattleLog } from "@/components/CollapsibleBattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
 import { DamageFloat } from "@/components/DamageFloat";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { RulesReminder } from "@/components/RulesReminder";
+import { SoundToggle } from "@/components/SoundToggle";
 import { TutorialLessonCard } from "@/components/TutorialLessonCard";
 import { TutorialResult } from "@/components/TutorialResult";
 import { buildRoundSummary } from "@/components/roundSummary";
 import type { GameState, InputAction } from "@/game/types";
 import { TUTORIAL_STEP_COUNT, TUTORIAL_STEPS } from "@/tutorial/tutorialSteps";
 import { getBattleFeedback } from "@/presentation/battleFeedback";
+import { getCombatAnimationType } from "@/presentation/combatAnimation";
+import {
+  getDamageFloatAccentForVictim,
+  getDamageFloatTier,
+} from "@/presentation/combatMotion";
 import {
   cloneGameState,
   inputActionLabel,
@@ -56,15 +63,40 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
 
   const tutorialFeedbackKey = resolvedState?.roundNumber ?? 0;
 
+  const { play } = useSound();
+
+  useEffect(() => {
+    if (phase !== "resolved" || !resolvedState || !tutorialBattleFeedback) return;
+    const prev = cloneGameState(step.startingGameState);
+    const anim = getCombatAnimationType(prev, resolvedState);
+    const staggered =
+      tutorialBattleFeedback.p1BecameStaggered ||
+      tutorialBattleFeedback.p2BecameStaggered;
+    if (!staggered || anim === "STAGGER_SKIP") return;
+    const id = window.setTimeout(() => {
+      play("STAGGER");
+    }, 230);
+    return () => window.clearTimeout(id);
+  }, [
+    phase,
+    lessonIndex,
+    resolvedState,
+    step.startingGameState,
+    tutorialBattleFeedback,
+    tutorialFeedbackKey,
+    play,
+  ]);
+
   const handleResolve = useCallback(() => {
     if (!selectedAction || phase === "resolved") return;
+    play("UI_CONFIRM");
     const prev = cloneGameState(step.startingGameState);
     const next = resolveTutorialRound(prev, selectedAction, step.opponentAction);
     const ok = step.successCondition(prev, next);
     setResolvedState(next);
     setLastSuccess(ok);
     setPhase("resolved");
-  }, [phase, selectedAction, step]);
+  }, [phase, play, selectedAction, step]);
 
   const handleRetry = useCallback(() => {
     setPhase("idle");
@@ -93,7 +125,8 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
           <p className="text-[0.65rem] font-bold uppercase tracking-[0.4em] text-slate-500">
             Training grounds
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <SoundToggle className="shrink-0" />
             <button
               type="button"
               onClick={onBack}
@@ -121,6 +154,16 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr,minmax(15rem,18rem)]">
           <div className="flex min-w-0 flex-col gap-10">
+            <p className="max-w-full break-words rounded-lg border border-slate-800/70 bg-slate-950/40 px-3 py-2.5 text-xs leading-relaxed text-slate-400 sm:text-sm">
+              <span className="font-semibold text-slate-300">Flow:</span> read the
+              lesson → choose a legal maneuver →{" "}
+              <span className="font-semibold text-slate-300">Resolve drill</span>{" "}
+              to reveal the bot and ledger. Use{" "}
+              <span className="font-semibold text-slate-300">Retry</span> on a
+              miss, or <span className="font-semibold text-slate-300">Next lesson</span>{" "}
+              when the drill clears.
+            </p>
+
             <section
               aria-label="Opponent commitment"
               className="rounded-xl border border-slate-800/80 bg-slate-950/50 px-4 py-3 text-sm text-slate-300 backdrop-blur-md"
@@ -146,16 +189,24 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                 <div className="relative min-w-0 flex-1">
                   {phase === "resolved" &&
                   tutorialBattleFeedback &&
+                  resolvedState &&
                   tutorialBattleFeedback.p1Damage > 0 ? (
                     <DamageFloat
                       key={`t-df-p1-${lessonIndex}-${tutorialFeedbackKey}`}
                       amount={tutorialBattleFeedback.p1Damage}
+                      tier={getDamageFloatTier(tutorialBattleFeedback.p1Damage)}
+                      accent={getDamageFloatAccentForVictim(
+                        "P1",
+                        cloneGameState(step.startingGameState),
+                        resolvedState,
+                      )}
                     />
                   ) : null}
                   <PlayerPanel
                     duelSide="left"
                     subtitle="You · Player 1"
                     snapshot={displayGame.p1}
+                    layoutVariant="hero"
                     isActiveTurn
                     resolveFeedback={
                       phase === "resolved" && tutorialBattleFeedback
@@ -163,6 +214,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                             roundKey: tutorialFeedbackKey,
                             tookDamage: tutorialBattleFeedback.p1Hit,
                             staggerIntro: tutorialBattleFeedback.p1BecameStaggered,
+                            damageTaken: tutorialBattleFeedback.p1Damage,
                           }
                         : null
                     }
@@ -178,16 +230,24 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                 <div className="relative min-w-0 flex-1">
                   {phase === "resolved" &&
                   tutorialBattleFeedback &&
+                  resolvedState &&
                   tutorialBattleFeedback.p2Damage > 0 ? (
                     <DamageFloat
                       key={`t-df-p2-${lessonIndex}-${tutorialFeedbackKey}`}
                       amount={tutorialBattleFeedback.p2Damage}
+                      tier={getDamageFloatTier(tutorialBattleFeedback.p2Damage)}
+                      accent={getDamageFloatAccentForVictim(
+                        "P2",
+                        cloneGameState(step.startingGameState),
+                        resolvedState,
+                      )}
                     />
                   ) : null}
                   <PlayerPanel
                     duelSide="right"
                     subtitle="Training bot · Player 2"
                     snapshot={displayGame.p2}
+                    layoutVariant="hero"
                     isActiveTurn={false}
                     resolveFeedback={
                       phase === "resolved" && tutorialBattleFeedback
@@ -195,6 +255,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                             roundKey: tutorialFeedbackKey,
                             tookDamage: tutorialBattleFeedback.p2Hit,
                             staggerIntro: tutorialBattleFeedback.p2BecameStaggered,
+                            damageTaken: tutorialBattleFeedback.p2Damage,
                           }
                         : null
                     }
@@ -253,18 +314,32 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
               />
             ) : null}
 
-            {roundSummary ? <RoundResultSummary summary={roundSummary} /> : null}
+            {roundSummary ? (
+              <RoundResultSummary summary={roundSummary} variant="embedded" />
+            ) : null}
 
-            <BattleLog logs={displayGame.logs} />
+            <CollapsibleBattleLog logs={displayGame.logs} tone="muted" />
 
-            <div className="lg:hidden">
-              <RulesReminder />
-            </div>
+            <details className="rounded-xl border border-slate-800/80 bg-slate-950/40 text-slate-300 backdrop-blur-md [&_summary::-webkit-details-marker]:hidden lg:hidden">
+              <summary className="cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">
+                Tactical rules
+              </summary>
+              <div className="border-t border-slate-800/70 px-3 pb-3 pt-2">
+                <RulesReminder />
+              </div>
+            </details>
           </div>
 
           <aside className="hidden lg:block">
             <div className="sticky top-28">
-              <RulesReminder />
+              <details className="rounded-xl border border-slate-800/80 bg-slate-950/40 backdrop-blur-md [&_summary::-webkit-details-marker]:hidden">
+                <summary className="cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">
+                  Tactical rules
+                </summary>
+                <div className="border-t border-slate-800/70 px-2 pb-3 pt-2">
+                  <RulesReminder />
+                </div>
+              </details>
             </div>
           </aside>
         </div>

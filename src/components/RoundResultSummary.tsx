@@ -12,25 +12,58 @@ import {
 
 interface RoundResultSummaryProps {
   summary: RoundSummary;
+  /** Tighter block when nested under the central combat stage. */
+  variant?: "standalone" | "embedded";
 }
 
-export function RoundResultSummary({ summary }: RoundResultSummaryProps) {
+export function RoundResultSummary({
+  summary,
+  variant = "standalone",
+}: RoundResultSummaryProps) {
+  const embedded = variant === "embedded";
+
   return (
     <section
       aria-label={`Round ${summary.roundCompleted} result`}
-      className="rounded-xl border border-amber-900/40 bg-slate-950/55 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.12)] backdrop-blur-md"
+      className={
+        embedded
+          ? "rounded-lg border border-slate-800/45 bg-black/18 px-2.5 py-2.5 shadow-inner backdrop-blur-sm sm:px-3 sm:py-3 lg:py-2 lg:px-2 [&_dd]:lg:text-[0.72rem] [&_dt]:lg:text-[0.58rem] [&_li]:lg:text-[0.72rem]"
+          : "rounded-xl border border-amber-900/40 bg-slate-950/55 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.12)] backdrop-blur-md"
+      }
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800 pb-3">
-        <h2 className="text-lg font-bold tracking-tight text-white">
+      <div
+        className={
+          embedded
+            ? "flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800/80 pb-2"
+            : "flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800 pb-3"
+        }
+      >
+        <h2
+          className={
+            embedded
+              ? "text-sm font-bold tracking-tight text-white sm:text-base"
+              : "text-lg font-bold tracking-tight text-white"
+          }
+        >
           Round {summary.roundCompleted}{" "}
-          <span className="font-normal text-slate-500">— result</span>
+          <span className="font-normal text-slate-500">— ledger</span>
         </h2>
-        <p className="text-xs uppercase tracking-widest text-amber-500/80">
-          Outcome ledger
+        <p className="text-[0.65rem] uppercase tracking-widest text-amber-500/80">
+          Outcome
         </p>
       </div>
+      {!embedded ? (
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">
+          Letter badges (S / R / P) are a quick color key. Narration matches the
+          same resolve step as the clash tableau above.
+        </p>
+      ) : (
+        <p className="mt-2 text-[0.65rem] leading-relaxed text-slate-500">
+          S / R / P badges match the clash above.
+        </p>
+      )}
 
-      <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+      <dl className={embedded ? "mt-3 grid gap-3 sm:grid-cols-2" : "mt-4 grid gap-4 sm:grid-cols-2"}>
         <div className="rounded-lg border border-slate-700/90 bg-black/25 p-3">
           <dt className="text-xs uppercase tracking-wide text-slate-500">
             Player 1 maneuver
@@ -63,7 +96,7 @@ export function RoundResultSummary({ summary }: RoundResultSummaryProps) {
         </div>
       </dl>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className={embedded ? "mt-3 grid gap-3 sm:grid-cols-2" : "mt-4 grid gap-4 sm:grid-cols-2"}>
         <div className="rounded-lg border border-slate-700/70 bg-black/20 p-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Damage dealt
