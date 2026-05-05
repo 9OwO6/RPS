@@ -76,8 +76,15 @@ export function BattleScreen({
     prev: GameState;
     next: GameState;
   } | null>(null);
+  const [aiThinking, setAiThinking] = useState(false);
+  const aiThinkTimerRef = useRef<number | null>(null);
 
   const resetMatch = useCallback(() => {
+    if (aiThinkTimerRef.current !== null) {
+      window.clearTimeout(aiThinkTimerRef.current);
+      aiThinkTimerRef.current = null;
+    }
+    setAiThinking(false);
     setGame(createInitialGameState("P1_PICK"));
     setP1Pick(null);
     setP2Pick(null);
@@ -92,21 +99,32 @@ export function BattleScreen({
     if (g.p1.state !== "STAGGERED" && a1 === null) return;
 
     if (battleMode === "VS_AI") {
-      const aiAction = chooseAiAction(g, "P2", aiDifficulty);
-      const next = resolveRound(
-        g,
-        g.p1.state === "STAGGERED" ? DUMMY_STAGGER_INPUT : (a1 as InputAction),
-        g.p2.state === "STAGGERED" ? DUMMY_STAGGER_INPUT : aiAction,
-      );
-      const summary = buildRoundSummary(g, next);
-      if (summary) setRoundSummary(summary);
-      setCombatFrame({ prev: g, next });
-      setGame(next);
+      if (aiThinking) return;
+      const p1ResolvedInput =
+        g.p1.state === "STAGGERED" ? DUMMY_STAGGER_INPUT : (a1 as InputAction);
+      setAiThinking(true);
+      setGame({ ...g, phase: "RESOLVE" });
+      const delayMs = 500 + Math.floor(Math.random() * 401);
+      aiThinkTimerRef.current = window.setTimeout(() => {
+        aiThinkTimerRef.current = null;
+        const latest = gameRef.current;
+        const aiAction = chooseAiAction(latest, "P2", aiDifficulty);
+        const next = resolveRound(
+          latest,
+          p1ResolvedInput,
+          latest.p2.state === "STAGGERED" ? DUMMY_STAGGER_INPUT : aiAction,
+        );
+        const summary = buildRoundSummary(latest, next);
+        if (summary) setRoundSummary(summary);
+        setCombatFrame({ prev: latest, next });
+        setGame(next);
+        setAiThinking(false);
+      }, delayMs);
       return;
     }
 
     setGame({ ...g, phase: "PASS_TO_P2" });
-  }, [aiDifficulty, battleMode, p1Pick]);
+  }, [aiDifficulty, aiThinking, battleMode, p1Pick]);
 
   const handleContinueAsP2 = useCallback(() => {
     if (battleMode !== "LOCAL_2P") return;
@@ -149,6 +167,14 @@ export function BattleScreen({
     }
   }, [game.phase]);
 
+  useEffect(() => {
+    return () => {
+      if (aiThinkTimerRef.current !== null) {
+        window.clearTimeout(aiThinkTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleNextRound = useCallback(() => {
     setRoundSummary(null);
     setCombatFrame(null);
@@ -164,6 +190,10 @@ export function BattleScreen({
         return battleMode === "VS_AI"
           ? "Choose a legal maneuver, then confirm to resolve against the training bot."
           : "Player 1: choose a legal maneuver, then tap Seal Player 1. Player 2 still cannot see your pick.";
+      case "RESOLVE":
+        return battleMode === "VS_AI" && aiThinking
+          ? "Training bot is choosing a maneuver..."
+          : "Crossing blows.";
       case "PASS_TO_P2":
         return "Pass the device. Player 2 must confirm on the overlay before the blind pick opens.";
       case "P2_PICK":
@@ -175,7 +205,7 @@ export function BattleScreen({
       default:
         return "";
     }
-  }, [battleMode, game.phase]);
+  }, [aiThinking, battleMode, game.phase]);
 
   const activePlayer: "P1" | "P2" | null =
     game.phase === "P1_PICK"
@@ -186,6 +216,7 @@ export function BattleScreen({
 
   const p1ConfirmDisabled =
     game.phase !== "P1_PICK" ||
+    aiThinking ||
     (game.p1.state !== "STAGGERED" && p1Pick === null);
 
   const p2ConfirmDisabled =
@@ -267,6 +298,9 @@ export function BattleScreen({
           <div className="min-w-0">
             <p className="text-[0.55rem] font-bold uppercase tracking-[0.35em] text-amber-600/90 lg:text-[0.5rem] lg:tracking-[0.32em]">
               {battleMode === "VS_AI" ? "Player vs AI" : "Pass-and-play"}
+              {battleMode === "VS_AI"
+                ? ` · ${aiDifficulty === "NORMAL" ? "Normal" : "Easy"}`
+                : ""}
             </p>
             <h1 className="truncate text-2xl font-black tracking-tight text-white md:text-3xl lg:text-xl lg:leading-tight">
               Tactical Duel
@@ -360,8 +394,9 @@ export function BattleScreen({
                   Skirmish line
                 </p>
                 <p className="max-w-sm text-sm leading-relaxed text-slate-500 lg:max-w-md lg:text-xs">
-                  Maneuver tableau, clash motion, and outcome ledger render here
-                  after Player 2 seals the round.
+                  {battleMode === "VS_AI" && aiThinking
+                    ? "AI is reading your stance..."
+                    : "Maneuver tableau, clash motion, and outcome ledger render here after Player 2 seals the round."}
                 </p>
               </div>
             )}

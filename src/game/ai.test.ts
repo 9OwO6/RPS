@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { getAvailableInputActions } from "@/game/actionAvailability";
 import { chooseAiAction } from "@/game/ai";
@@ -73,5 +73,25 @@ describe("chooseAiAction", () => {
     game.p1PendingAction = "SCISSORS";
     const action = chooseAiAction(game, "P2", "NORMAL");
     expect(getAvailableInputActions(game.p2.state)).toContain(action);
+  });
+
+  it("difficulty changes strategy path without invalid output", () => {
+    const game = withP2State("CHARGING_LV1");
+    game.p1.state = "CHARGING_LV2";
+    game.p1.paperStreak = 1;
+    game.p1.scissorsStreak = 2;
+
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.75);
+    try {
+      const easyAction = chooseAiAction(game, "P2", "EASY");
+      const normalAction = chooseAiAction(game, "P2", "NORMAL");
+      const legal = getAvailableInputActions(game.p2.state);
+      expect(legal).toContain(easyAction);
+      expect(legal).toContain(normalAction);
+      expect(easyAction).toBe("HOLD");
+      expect(normalAction).toBe("PAPER");
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 });

@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+
+import type { AiDifficulty } from "@/game/ai";
 import type { AppMode } from "@/lib/appMode";
 
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
@@ -8,9 +11,12 @@ import { SoundToggle } from "@/components/SoundToggle";
 
 interface StartScreenProps {
   onSelectMode: (mode: Exclude<AppMode, "START">) => void;
+  onStartVsAi: (difficulty: AiDifficulty) => void;
 }
 
-export function StartScreen({ onSelectMode }: StartScreenProps) {
+export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
+  const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>("NORMAL");
+
   return (
     <div className="relative z-10 flex min-h-screen flex-col">
       <ArenaBackdrop />
@@ -74,16 +80,43 @@ export function StartScreen({ onSelectMode }: StartScreenProps) {
 
           <div className="my-2 border-t border-slate-800/80 pt-2" />
 
-          <button
-            type="button"
-            onClick={() => onSelectMode("VS_AI")}
-            className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
-          >
-            Player vs AI
-            <span className="mt-1 block text-xs font-normal text-slate-400">
+          <section className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left shadow-md backdrop-blur-md">
+            <p className="text-base font-bold text-slate-100">Player vs AI</p>
+            <p className="mt-1 text-xs font-normal text-slate-400">
               Basic training bot opponent
-            </span>
-          </button>
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setAiDifficulty("EASY")}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                  aiDifficulty === "EASY"
+                    ? "border-amber-500 bg-amber-950/50 text-amber-100"
+                    : "border-slate-600 bg-slate-900/70 text-slate-300 hover:border-amber-700/50"
+                }`}
+              >
+                Easy
+              </button>
+              <button
+                type="button"
+                onClick={() => setAiDifficulty("NORMAL")}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                  aiDifficulty === "NORMAL"
+                    ? "border-amber-500 bg-amber-950/50 text-amber-100"
+                    : "border-slate-600 bg-slate-900/70 text-slate-300 hover:border-amber-700/50"
+                }`}
+              >
+                Normal
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => onStartVsAi(aiDifficulty)}
+              className="mt-3 w-full rounded-xl border border-amber-700/50 bg-amber-950/35 px-5 py-3 text-left text-sm font-bold text-amber-50 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)] transition hover:border-amber-500/60 hover:bg-amber-950/50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
+            >
+              Start vs AI ({aiDifficulty === "NORMAL" ? "Normal" : "Easy"})
+            </button>
+          </section>
           <button
             type="button"
             disabled

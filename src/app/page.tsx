@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { SoundProvider } from "@/audio/SoundContext";
+import type { AiDifficulty } from "@/game/ai";
 import type { AppMode } from "@/lib/appMode";
 import { BattleScreen } from "@/components/BattleScreen";
 import { RulesScreen } from "@/components/RulesScreen";
@@ -11,11 +12,20 @@ import { TutorialScreen } from "@/components/TutorialScreen";
 
 export default function Home() {
   const [mode, setMode] = useState<AppMode>("START");
+  const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>("NORMAL");
 
   let content: ReactNode;
   switch (mode) {
     case "START":
-      content = <StartScreen onSelectMode={setMode} />;
+      content = (
+        <StartScreen
+          onSelectMode={setMode}
+          onStartVsAi={(difficulty) => {
+            setAiDifficulty(difficulty);
+            setMode("VS_AI");
+          }}
+        />
+      );
       break;
     case "TUTORIAL":
       content = (
@@ -38,7 +48,7 @@ export default function Home() {
     case "VS_AI":
       content = (
         <main className="min-h-screen pb-16 pt-8 lg:overflow-hidden lg:pb-0 lg:pt-0">
-          <BattleScreen battleMode="VS_AI" />
+          <BattleScreen battleMode="VS_AI" aiDifficulty={aiDifficulty} />
         </main>
       );
       break;
