@@ -11,13 +11,18 @@ import {
 } from "react";
 
 import {
+  LEGACY_MUTED_STORAGE_KEY,
+  MASTER_AUDIO_STORAGE_KEY,
+  MUSIC_AUDIO_STORAGE_KEY,
   pauseBgmFile,
   playBgmFile,
   playSoundFile,
-  readMutedFromStorage,
+  readAudioEnabledFromStorage,
+  readLegacyMutedFromStorage,
+  SFX_AUDIO_STORAGE_KEY,
   setBgmVolumeFile,
   stopBgmFile,
-  writeMutedToStorage,
+  writeAudioEnabledToStorage,
 } from "@/audio/audioEngine";
 import { BGM_PATH, SOUND_PATHS, type SoundKey } from "@/audio/soundMap";
 
@@ -34,19 +39,27 @@ const VOLUME: Partial<Record<SoundKey, number>> = {
   DAMAGE_LIGHT: 0.28,
   DAMAGE_HEAVY: 0.42,
   STAGGER: 0.4,
-  GAME_WIN: 0.5,
-  GAME_OVER: 0.45,
+  GAME_WIN: 0.35,
+  GAME_OVER: 0.3,
 };
 const BGM_VOLUME = 0.14;
+const END_STINGER_MAX_MS = 2500;
 
 export interface SoundContextValue {
-  muted: boolean;
-  setMuted: (next: boolean) => void;
-  toggleMute: () => void;
+  masterEnabled: boolean;
+  musicEnabled: boolean;
+  sfxEnabled: boolean;
+  setMasterEnabled: (next: boolean) => void;
+  setMusicEnabled: (next: boolean) => void;
+  setSfxEnabled: (next: boolean) => void;
+  toggleMasterEnabled: () => void;
+  toggleMusicEnabled: () => void;
+  toggleSfxEnabled: () => void;
   markInteracted: () => void;
   playBgm: () => void;
   pauseBgm: () => void;
   stopBgm: () => void;
+  stopEndStinger: () => void;
   setBgmVolume: (volume: number) => void;
   /** Play by logical key; respects mute; fails silently. */
   play: (key: SoundKey, options?: { volume?: number }) => void;
@@ -55,12 +68,34 @@ export interface SoundContextValue {
 const SoundContext = createContext<SoundContextValue | null>(null);
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
-  const [muted, setMutedState] = useState(false);
+  const [masterEnabled, setMasterEnabledState] = useState(true);
+  const [musicEnabled, setMusicEnabledState] = useState(true);
+  const [sfxEnabled, setSfxEnabledState] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
   const bgmPausedBySystem = useRef(false);
+  const endStingerRef = useRef<HTMLAudioElement | null>(null);
+  const endStingerTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setMutedState(readMutedFromStorage());
+    const legacyMuted = readLegacyMutedFromStorage();
+    const legacyExists = (() => {
+      if (typeof window === "undefined") return false;
+      try {
+        return window.localStorage.getItem(LEGACY_MUTED_STORAGE_KEY) !== null;
+      } catch {
+        return false;
+      }
+    })();
+    const defaultMaster = legacyExists ? !legacyMuted : true;
+    const master = readAudioEnabledFromStorage(
+      MASTER_AUDIO_STORAGE_KEY,
+      defaultMaster,
+    );
+    const music = readAudioEnabledFromStorage(MUSIC_AUDIO_STORAGE_KEY, true);
+    const sfx = readAudioEnabledFromStorage(SFX_AUDIO_STORAGE_KEY, true);
+    setMasterEnabledState(master);
+    setMusicEnabledState(music);
+    setSfxEnabledState(sfx);
   }, []);
 
   const markInteracted = useCallback(() => {
@@ -78,25 +113,89 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     };
   }, [hasInteracted]);
 
-  const setMuted = useCallback((next: boolean) => {
-    setMutedState(next);
-    writeMutedToStorage(next);
+  const stopEndStinger = useCallback(() => {
+    if (endStingerTimerRef.current !== null) {
+      window.clearTimeout(endStingerTimerRef.current);
+      endStingerTimerRef.current = null;
+    }
+    if (!endStingerRef.current) return;
+    try {
+      endStingerRef.current.pause();
+      endStingerRef.current.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+    endStingerRef.current = null;
   }, []);
 
-  const toggleMute = useCallback(() => {
+  const setMasterEnabled = useCallback((next: boolean) => {
+    setMasterEnabledState(next);
+    writeAudioEnabledToStorage(MASTER_AUDIO_STORAGE_KEY, next);
+  }, []);
+
+  const setMusicEnabled = useCallback((next: boolean) => {
+    setMusicEnabledState(next);
+    writeAudioEnabledToStorage(MUSIC_AUDIO_STORAGE_KEY, next);
+  }, []);
+
+  const setSfxEnabled = useCallback((next: boolean) => {
+    setSfxEnabledState(next);
+    writeAudioEnabledToStorage(SFX_AUDIO_STORAGE_KEY, next);
+  }, []);
+
+  const toggleMasterEnabled = useCallback(() => {
     setHasInteracted(true);
-    setMutedState((m) => {
+    setMasterEnabledState((m) => {
       const next = !m;
-      writeMutedToStorage(next);
+      writeAudioEnabledToStorage(MASTER_AUDIO_STORAGE_KEY, next);
       return next;
     });
   }, []);
 
+  const toggleMusicEnabled = useCallback(() => {
+    setHasInteracted(true);
+    setMusicEnabledState((m) => {
+      const next = !m;
+      writeAudioEnabledToStorage(MUSIC_AUDIO_STORAGE_KEY, next);
+      return next;
+    });
+  }, []);
+
+  const toggleSfxEnabled = useCallback(() => {
+    setHasInteracted(true);
+    setSfxEnabledState((m) => {
+      const next = !m;
+      writeAudioEnabledToStorage(SFX_AUDIO_STORAGE_KEY, next);
+      return next;
+    });
+  }, []);
+
+  const playEndStinger = useCallback(
+    (src: string, volume: number) => {
+      if (!masterEnabled || !sfxEnabled) return;
+      setHasInteracted(true);
+      stopEndStinger();
+      try {
+        const el = new Audio(src);
+        el.preload = "auto";
+        el.volume = Math.max(0, Math.min(1, volume));
+        endStingerRef.current = el;
+        void el.play();
+        endStingerTimerRef.current = window.setTimeout(() => {
+          stopEndStinger();
+        }, END_STINGER_MAX_MS);
+      } catch {
+        /* ignore missing/decode/autoplay errors */
+      }
+    },
+    [masterEnabled, sfxEnabled, stopEndStinger],
+  );
+
   const playBgm = useCallback(() => {
-    if (muted || !hasInteracted) return;
+    if (!masterEnabled || !musicEnabled || !hasInteracted) return;
     bgmPausedBySystem.current = false;
     void playBgmFile(BGM_PATH, BGM_VOLUME);
-  }, [hasInteracted, muted]);
+  }, [hasInteracted, masterEnabled, musicEnabled]);
 
   const pauseBgm = useCallback(() => {
     bgmPausedBySystem.current = true;
@@ -113,7 +212,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (muted) {
+    if (!masterEnabled || !musicEnabled) {
       pauseBgmFile();
       return;
     }
@@ -121,40 +220,70 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     if (!bgmPausedBySystem.current) {
       void playBgmFile(BGM_PATH, BGM_VOLUME);
     }
-  }, [hasInteracted, muted]);
+  }, [hasInteracted, masterEnabled, musicEnabled]);
+
+  useEffect(() => {
+    if (!masterEnabled || !sfxEnabled) {
+      stopEndStinger();
+    }
+  }, [masterEnabled, sfxEnabled, stopEndStinger]);
+
+  useEffect(() => {
+    return () => {
+      stopEndStinger();
+    };
+  }, [stopEndStinger]);
 
   const play = useCallback(
     (key: SoundKey, options?: { volume?: number }) => {
-      if (muted) return;
+      if (!masterEnabled || !sfxEnabled) return;
       setHasInteracted(true);
       const src = SOUND_PATHS[key];
       const base = VOLUME[key] ?? 0.4;
       const vol = options?.volume ?? base;
+      if (key === "GAME_WIN" || key === "GAME_OVER") {
+        playEndStinger(src, vol);
+        return;
+      }
       void playSoundFile(src, vol);
     },
-    [muted],
+    [masterEnabled, playEndStinger, sfxEnabled],
   );
 
   const value = useMemo(
     () => ({
-      muted,
-      setMuted,
-      toggleMute,
+      masterEnabled,
+      musicEnabled,
+      sfxEnabled,
+      setMasterEnabled,
+      setMusicEnabled,
+      setSfxEnabled,
+      toggleMasterEnabled,
+      toggleMusicEnabled,
+      toggleSfxEnabled,
       markInteracted,
       playBgm,
       pauseBgm,
       stopBgm,
+      stopEndStinger,
       setBgmVolume,
       play,
     }),
     [
-      muted,
-      setMuted,
-      toggleMute,
+      masterEnabled,
+      musicEnabled,
+      sfxEnabled,
+      setMasterEnabled,
+      setMusicEnabled,
+      setSfxEnabled,
+      toggleMasterEnabled,
+      toggleMusicEnabled,
+      toggleSfxEnabled,
       markInteracted,
       playBgm,
       pauseBgm,
       stopBgm,
+      stopEndStinger,
       setBgmVolume,
       play,
     ],

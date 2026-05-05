@@ -238,7 +238,7 @@ export function BattleScreen({
   const feedbackRoundKey = combatFrame?.next.roundNumber ?? 0;
   const feedbackNext = combatFrame?.next ?? null;
 
-  const { pauseBgm, play, playBgm } = useSound();
+  const { pauseBgm, play, playBgm, stopEndStinger } = useSound();
   const endSoundRoundRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -274,10 +274,11 @@ export function BattleScreen({
 
   const resetWithSound = useCallback(() => {
     endSoundRoundRef.current = null;
+    stopEndStinger();
     play("UI_CONFIRM");
     resetMatch();
     playBgm();
-  }, [play, playBgm, resetMatch]);
+  }, [play, playBgm, resetMatch, stopEndStinger]);
 
   return (
     <div className="relative min-h-screen lg:flex lg:h-[100dvh] lg:max-h-[100dvh] lg:flex-col lg:overflow-hidden">
@@ -592,7 +593,14 @@ export function BattleScreen({
           open
           winner={game.winner}
           onRestart={resetWithSound}
-          onBackToStart={onBackToStart}
+          onBackToStart={
+            onBackToStart
+              ? () => {
+                  stopEndStinger();
+                  onBackToStart();
+                }
+              : undefined
+          }
         />
       ) : null}
     </div>
