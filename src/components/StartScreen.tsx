@@ -124,7 +124,7 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
           >
             Online Duel
             <span className="mt-1 block text-xs font-normal text-slate-400">
-              Room code lobby (local skeleton)
+              Socket.IO duel · server resolves rounds
             </span>
           </button>
         </nav>

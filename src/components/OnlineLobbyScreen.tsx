@@ -1,38 +1,72 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import type { Socket } from "socket.io-client";
 
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
 import { SoundToggle } from "@/components/SoundToggle";
-import { createOnlineSocket, resolveSocketUrl } from "@/online/socketClient";
 import type {
   ErrorMessagePayload,
   PlayerLeftPayload,
   PublicOnlineRoomState,
   RoomCreatedPayload,
   RoomJoinedPayload,
+  RoomRejoinedPayload,
   RoomStatePayload,
 } from "@/online/onlineTypes";
+import {
+  clearOnlineSession,
+  loadOnlineSession,
+  saveOnlineSession,
+  type OnlineSessionPersisted,
+} from "@/online/onlineSession";
+import { resolveSocketUrl } from "@/online/socketClient";
 
 type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 
 interface OnlineLobbyScreenProps {
+  socket: Socket;
   onBack: () => void;
+  onEnterBattle: (ctx: {
+    roomCode: string;
+    playerId: "P1" | "P2";
+    roomState: PublicOnlineRoomState;
+  }) => void;
 }
 
-export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
-  const socketRef = useRef<ReturnType<typeof createOnlineSocket> | null>(null);
+export function OnlineLobbyScreen({
+  socket,
+  onBack,
+  onEnterBattle,
+}: OnlineLobbyScreenProps) {
   const [connection, setConnection] = useState<ConnectionState>("connecting");
   const [myRole, setMyRole] = useState<"P1" | "P2" | null>(null);
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [roomState, setRoomState] = useState<PublicOnlineRoomState | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    code?: string;
+  } | null>(null);
+  const [savedSession, setSavedSession] =
+    useState<OnlineSessionPersisted | null>(null);
+
+  const persistSession = useCallback((session: OnlineSessionPersisted) => {
+    saveOnlineSession(session);
+    setSavedSession(session);
+  }, []);
+
+  const wipeSession = useCallback(() => {
+    clearOnlineSession();
+    setSavedSession(null);
+  }, []);
 
   useEffect(() => {
-    const socket = createOnlineSocket();
-    socketRef.current = socket;
+    setSavedSession(loadOnlineSession());
+  }, []);
 
+  useEffect(() => {
     const onConnect = () => {
       setConnection("connected");
       setError(null);
@@ -42,7 +76,10 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
     };
     const onConnectError = () => {
       setConnection("error");
-      setError("Could not connect to online room server.");
+      setError({
+        message: "Could not connect to online room server.",
+        code: "CONNECT_ERROR",
+      });
     };
 
     socket.on("connect", onConnect);
@@ -52,6 +89,11 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
     socket.on("room_created", (payload: RoomCreatedPayload) => {
       setMyRole(payload.playerId);
       setRoomState(payload.roomState);
+      persistSession({
+        roomCode: payload.roomCode,
+        playerId: payload.playerId,
+        playerToken: payload.playerToken,
+      });
       setNotice("Room created. Waiting for opponent to join.");
       setError(null);
     });
@@ -59,13 +101,34 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
     socket.on("room_joined", (payload: RoomJoinedPayload) => {
       setMyRole(payload.playerId);
       setRoomState(payload.roomState);
+      persistSession({
+        roomCode: payload.roomCode,
+        playerId: payload.playerId,
+        playerToken: payload.playerToken,
+      });
       setNotice("Joined room successfully.");
       setError(null);
     });
 
+    socket.on("room_rejoined", (payload: RoomRejoinedPayload) => {
+      setMyRole(payload.playerId);
+      setRoomState(payload.roomState);
+      persistSession({
+        roomCode: payload.roomCode,
+        playerId: payload.playerId,
+        playerToken: payload.playerToken,
+      });
+      setNotice("Reconnected to your seat.");
+      setError(null);
+      onEnterBattle({
+        roomCode: payload.roomCode,
+        playerId: payload.playerId,
+        roomState: payload.roomState,
+      });
+    });
+
     socket.on("room_state", (payload: RoomStatePayload) => {
       setRoomState(payload.roomState);
-      setError(null);
     });
 
     socket.on("player_left", (payload: PlayerLeftPayload) => {
@@ -73,45 +136,96 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
     });
 
     socket.on("error_message", (payload: ErrorMessagePayload) => {
-      setError(payload.message);
+      setError({ message: payload.message, code: payload.code });
+      if (payload.code === "REJOIN_FAILED") {
+        wipeSession();
+      }
     });
 
+    if (socket.connected) setConnection("connected");
+
     return () => {
-      socket.removeAllListeners();
-      socket.disconnect();
-      socketRef.current = null;
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
+      socket.off("room_created");
+      socket.off("room_joined");
+      socket.off("room_rejoined");
+      socket.off("room_state");
+      socket.off("player_left");
+      socket.off("error_message");
     };
-  }, []);
+  }, [onEnterBattle, persistSession, socket, wipeSession]);
 
   const waitingForOpponent = useMemo(() => {
     if (!roomState) return false;
     return roomState.status === "WAITING" || !roomState.players.P2;
   }, [roomState]);
 
+  const canEnterBattle = useMemo(() => {
+    if (!roomState || !myRole) return false;
+    return (
+      !waitingForOpponent &&
+      roomState.players.P1?.connected &&
+      roomState.players.P2?.connected
+    );
+  }, [roomState, myRole, waitingForOpponent]);
+
   const createRoom = () => {
     setNotice(null);
     setError(null);
-    socketRef.current?.emit("create_room", {});
+    socket.emit("create_room", {});
   };
 
   const joinRoom = () => {
     const roomCode = roomCodeInput.trim().toUpperCase();
     if (!roomCode) {
-      setError("Enter a room code first.");
+      setError({
+        message: "Enter a room code first.",
+        code: "CLIENT_VALIDATION",
+      });
       return;
     }
     setNotice(null);
     setError(null);
-    socketRef.current?.emit("join_room", { roomCode });
+    socket.emit("join_room", { roomCode });
   };
 
   const leaveRoom = () => {
     if (roomState?.roomCode) {
-      socketRef.current?.emit("leave_room", { roomCode: roomState.roomCode });
+      socket.emit("leave_room", { roomCode: roomState.roomCode });
     }
+    wipeSession();
     setRoomState(null);
     setMyRole(null);
     setNotice(null);
+    setError(null);
+  };
+
+  const handleBackToStart = () => {
+    if (roomState?.roomCode) {
+      socket.emit("leave_room", { roomCode: roomState.roomCode });
+    }
+    wipeSession();
+    onBack();
+  };
+
+  const rejoinLastRoom = () => {
+    const s = savedSession ?? loadOnlineSession();
+    if (!s) {
+      setError({
+        message: "No saved online session.",
+        code: "CLIENT_VALIDATION",
+      });
+      return;
+    }
+    setNotice(null);
+    setError(null);
+    socket.emit("rejoin_room", {
+      roomCode: s.roomCode,
+      playerId: s.playerId,
+      playerToken: s.playerToken,
+    });
   };
 
   const connectionLabel =
@@ -142,10 +256,34 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
             Room Lobby
           </h1>
           <p className="mt-2 max-w-xl text-sm text-slate-400">
-            Create a room code or join an existing one. This phase supports room
-            setup only.
+            Create or join a room. When both duelists are present, enter the arena.
           </p>
         </header>
+
+        {savedSession ? (
+          <section className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-amber-400">
+              Reconnect
+            </p>
+            <p className="mt-2 text-sm text-slate-200">
+              Last room:{" "}
+              <span className="font-mono font-black tracking-wider text-amber-200">
+                {savedSession.roomCode}
+              </span>
+              <span className="text-slate-400"> · You were </span>
+              <span className="font-semibold text-white">
+                {savedSession.playerId}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={rejoinLastRoom}
+              className="mt-3 rounded-xl border border-amber-600/60 bg-amber-950/40 px-4 py-2 text-xs font-bold uppercase tracking-widest text-amber-100 transition hover:border-amber-400"
+            >
+              Rejoin Last Room
+            </button>
+          </section>
+        ) : null}
 
         <section className="rounded-xl border border-slate-800/80 bg-slate-950/55 p-4">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
@@ -153,7 +291,8 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
           </p>
           <p className="mt-1 text-sm text-slate-300">{resolveSocketUrl()}</p>
           <p className="mt-2 text-sm text-slate-400">
-            Status: <span className="font-semibold text-slate-200">{connectionLabel}</span>
+            Status:{" "}
+            <span className="font-semibold text-slate-200">{connectionLabel}</span>
           </p>
         </section>
 
@@ -185,13 +324,20 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
         {roomState ? (
           <section className="rounded-xl border border-slate-800/80 bg-slate-950/55 p-4 text-sm text-slate-300">
             <p>
-              Room Code: <span className="font-black tracking-wider text-amber-200">{roomState.roomCode}</span>
+              Room Code:{" "}
+              <span className="font-black tracking-wider text-amber-200">
+                {roomState.roomCode}
+              </span>
             </p>
             <p className="mt-1">
-              Role: <span className="font-semibold text-slate-100">{myRole ? `You are ${myRole}` : "Unassigned"}</span>
+              Role:{" "}
+              <span className="font-semibold text-slate-100">
+                {myRole ? `You are ${myRole}` : "Unassigned"}
+              </span>
             </p>
             <p className="mt-1">
-              Room Status: <span className="font-semibold text-slate-100">{roomState.status}</span>
+              Room Status:{" "}
+              <span className="font-semibold text-slate-100">{roomState.status}</span>
             </p>
             <p className="mt-1">
               Opponent:{" "}
@@ -199,13 +345,31 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
                 {waitingForOpponent ? "Waiting for player 2..." : "Both players joined."}
               </span>
             </p>
-            <button
-              type="button"
-              onClick={leaveRoom}
-              className="mt-3 rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-200 transition hover:border-amber-700/50"
-            >
-              Leave Room
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={leaveRoom}
+                className="rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-200 transition hover:border-amber-700/50"
+              >
+                Leave Room
+              </button>
+              {canEnterBattle ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!myRole || !roomState) return;
+                    onEnterBattle({
+                      roomCode: roomState.roomCode,
+                      playerId: myRole,
+                      roomState,
+                    });
+                  }}
+                  className="rounded-lg border border-amber-700/50 bg-amber-950/40 px-3 py-2 text-xs font-bold uppercase tracking-widest text-amber-100 transition hover:border-amber-500"
+                >
+                  Enter Online Duel
+                </button>
+              ) : null}
+            </div>
           </section>
         ) : null}
 
@@ -215,14 +379,17 @@ export function OnlineLobbyScreen({ onBack }: OnlineLobbyScreenProps) {
           </p>
         ) : null}
         {error ? (
-          <p className="rounded-lg border border-red-900/50 bg-red-950/20 px-3 py-2 text-sm text-red-200">
-            {error}
-          </p>
+          <div className="rounded-lg border border-red-900/50 bg-red-950/20 px-3 py-2 text-sm text-red-200">
+            <p>{error.message}</p>
+            {error.code ? (
+              <p className="mt-1 font-mono text-xs text-red-300/85">{error.code}</p>
+            ) : null}
+          </div>
         ) : null}
 
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBackToStart}
           className="mt-2 self-start rounded-xl border border-slate-600 bg-slate-800/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-100 hover:border-amber-500/50"
         >
           Back to Start

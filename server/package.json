@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "npm --prefix .. run dev:server"
   },
   "dependencies": {
     "socket.io": "^4.8.1"

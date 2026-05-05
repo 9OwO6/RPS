@@ -3,11 +3,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:server": "npm --prefix server run dev",
+    "dev:server": "npx tsx ./socket-server.ts",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke:server": "vitest run src/online/serverRoomSmoke.test.ts"
   },
   "dependencies": {
     "next": "^15.1.3",

@@ -6,7 +6,7 @@ import { SoundProvider } from "@/audio/SoundContext";
 import type { AiDifficulty } from "@/game/ai";
 import type { AppMode } from "@/lib/appMode";
 import { BattleScreen } from "@/components/BattleScreen";
-import { OnlineLobbyScreen } from "@/components/OnlineLobbyScreen";
+import { OnlineDuelRoute } from "@/components/OnlineDuelRoute";
 import { RulesScreen } from "@/components/RulesScreen";
 import { StartScreen } from "@/components/StartScreen";
 import { TutorialScreen } from "@/components/TutorialScreen";
@@ -58,7 +58,7 @@ export default function Home() {
       );
       break;
     case "ONLINE_DUEL":
-      content = <OnlineLobbyScreen onBack={() => setMode("START")} />;
+      content = <OnlineDuelRoute onBackToStart={() => setMode("START")} />;
       break;
     default: {
       const _x: never = mode;
