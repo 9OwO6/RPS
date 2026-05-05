@@ -66,6 +66,12 @@ export function chooseAiAction(
   aiPlayerId: PlayerId,
   difficulty: AiDifficulty,
 ): InputAction {
+  /**
+   * Fairness contract:
+   * - Uses only public GameState snapshots and streaks.
+   * - Does not receive/read UI-only current selected action.
+   * - NORMAL applies weighted public-state heuristics, not perfect counterplay.
+   */
   const ai = aiPlayerId === "P1" ? gameState.p1 : gameState.p2;
   const opponent = aiPlayerId === "P1" ? gameState.p2 : gameState.p1;
   const legal = getAvailableInputActions(ai.state);

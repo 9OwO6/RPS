@@ -57,11 +57,13 @@ function phaseLabel(phase: GamePhase, mode: BattleMode): string {
 interface BattleScreenProps {
   battleMode?: BattleMode;
   aiDifficulty?: AiDifficulty;
+  onBackToStart?: () => void;
 }
 
 export function BattleScreen({
   battleMode = "LOCAL_2P",
   aiDifficulty = "NORMAL",
+  onBackToStart,
 }: BattleScreenProps) {
   const [game, setGame] = useState<GameState>(() =>
     createInitialGameState("P1_PICK"),
@@ -553,6 +555,11 @@ export function BattleScreen({
                 Player 1&apos;s maneuver is not shown until you resolve.
               </p>
             )}
+            {battleMode === "VS_AI" ? (
+              <p className="rounded-lg border border-slate-800/80 bg-black/25 px-2 py-1.5 text-[0.68rem] text-slate-500">
+                AI uses public stance information only.
+              </p>
+            ) : null}
           </div>
         </section>
         </div>
@@ -581,7 +588,12 @@ export function BattleScreen({
       />
 
       {game.phase === "GAME_OVER" && game.winner !== undefined ? (
-        <GameOverPanel open winner={game.winner} onRestart={resetWithSound} />
+        <GameOverPanel
+          open
+          winner={game.winner}
+          onRestart={resetWithSound}
+          onBackToStart={onBackToStart}
+        />
       ) : null}
     </div>
   );

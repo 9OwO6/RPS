@@ -41,14 +41,18 @@ export default function Home() {
     case "LOCAL_DUEL":
       content = (
         <main className="min-h-screen pb-16 pt-8 lg:overflow-hidden lg:pb-0 lg:pt-0">
-          <BattleScreen battleMode="LOCAL_2P" />
+          <BattleScreen battleMode="LOCAL_2P" onBackToStart={() => setMode("START")} />
         </main>
       );
       break;
     case "VS_AI":
       content = (
         <main className="min-h-screen pb-16 pt-8 lg:overflow-hidden lg:pb-0 lg:pt-0">
-          <BattleScreen battleMode="VS_AI" aiDifficulty={aiDifficulty} />
+          <BattleScreen
+            battleMode="VS_AI"
+            aiDifficulty={aiDifficulty}
+            onBackToStart={() => setMode("START")}
+          />
         </main>
       );
       break;

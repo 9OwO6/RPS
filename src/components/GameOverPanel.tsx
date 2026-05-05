@@ -6,6 +6,7 @@ interface GameOverPanelProps {
   open: boolean;
   winner: NonNullable<GameState["winner"]>;
   onRestart: () => void;
+  onBackToStart?: () => void;
 }
 
 function outcomeLabel(w: GameOverPanelProps["winner"]): string {
@@ -38,7 +39,12 @@ function outcomeHeadline(w: GameOverPanelProps["winner"]): string {
   }
 }
 
-export function GameOverPanel({ open, winner, onRestart }: GameOverPanelProps) {
+export function GameOverPanel({
+  open,
+  winner,
+  onRestart,
+  onBackToStart,
+}: GameOverPanelProps) {
   if (!open) return null;
 
   return (
@@ -69,13 +75,24 @@ export function GameOverPanel({ open, winner, onRestart }: GameOverPanelProps) {
           pick for Player 1.
         </p>
 
-        <button
-          type="button"
-          className="mt-12 w-full rounded-xl border-2 border-amber-900/70 bg-transparent px-4 py-3.5 text-sm font-black uppercase tracking-[0.3em] text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/40 hover:text-white"
-          onClick={onRestart}
-        >
-          Restart duel
-        </button>
+        <div className="mt-12 grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            className="w-full rounded-xl border-2 border-amber-900/70 bg-transparent px-4 py-3.5 text-sm font-black uppercase tracking-[0.3em] text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/40 hover:text-white"
+            onClick={onRestart}
+          >
+            Restart duel
+          </button>
+          {onBackToStart ? (
+            <button
+              type="button"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3.5 text-sm font-black uppercase tracking-[0.2em] text-slate-200 transition hover:border-amber-700/50 hover:text-amber-100"
+              onClick={onBackToStart}
+            >
+              Back to start
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
