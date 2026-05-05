@@ -3,4 +3,5 @@ export type AppMode =
   | "TUTORIAL"
   | "LOCAL_DUEL"
   | "VS_AI"
+  | "ONLINE_DUEL"
   | "RULES";

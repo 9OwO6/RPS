@@ -119,13 +119,12 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
           </section>
           <button
             type="button"
-            disabled
-            aria-disabled="true"
-            className="cursor-not-allowed rounded-xl border border-slate-800 bg-slate-950/50 px-5 py-4 text-left text-base font-bold text-slate-600 opacity-80"
+            onClick={() => onSelectMode("ONLINE_DUEL")}
+            className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
             Online Duel
-            <span className="mt-1 block text-xs font-normal text-slate-600">
-              Coming soon
+            <span className="mt-1 block text-xs font-normal text-slate-400">
+              Room code lobby (local skeleton)
             </span>
           </button>
         </nav>
