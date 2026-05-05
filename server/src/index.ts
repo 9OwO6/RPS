@@ -19,6 +19,7 @@ import {
   joinRoomAsP2,
   markDisconnected,
   markNextRoundReady,
+  ONLINE_SEAT_GRACE_MS,
   purgeStaleRooms,
   removePlayerFromRoom,
   resolveLockedRound,
@@ -29,6 +30,26 @@ import {
   toPublicRoomState,
   tryRejoinSeat,
 } from "./rooms.js";
+
+/** Bind address for containers / PaaS (Render, Railway, Koyeb). Override with HOST if needed. */
+function parseListenHost(): string {
+  const raw = process.env.HOST?.trim();
+  if (raw) return raw;
+  return "0.0.0.0";
+}
+
+/**
+ * Vercel preview + prod: set CORS_ORIGIN=https://app.vercel.app,https://preview.vercel.app
+ * Local: CORS_ORIGIN=http://localhost:3000
+ */
+function parseCorsOrigin(): string | string[] {
+  const raw =
+    process.env.CORS_ORIGIN?.trim() || process.env.FRONTEND_ORIGIN?.trim();
+  if (!raw) return "http://localhost:3000";
+  const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return "http://localhost:3000";
+  return parts.length === 1 ? parts[0]! : parts;
+}
 
 function parseListenPort(): number {
   const raw = process.env.PORT?.trim();
@@ -43,12 +64,8 @@ function parseListenPort(): number {
 }
 
 const listenPort = parseListenPort();
-
-/** Preferred env name per deployment docs; FRONTEND_ORIGIN kept for compatibility. */
-const CORS_ORIGIN =
-  process.env.CORS_ORIGIN?.trim() ||
-  process.env.FRONTEND_ORIGIN?.trim() ||
-  "http://localhost:3000";
+const listenHost = parseListenHost();
+const corsOrigin = parseCorsOrigin();
 
 const ROOM_IDLE_PURGE_MS = Math.max(
   60_000,
@@ -63,7 +80,7 @@ const httpServer = createServer();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: [CORS_ORIGIN],
+    origin: corsOrigin,
     methods: ["GET", "POST"],
   },
 });
@@ -503,9 +520,18 @@ httpServer.once("error", (err: NodeJS.ErrnoException) => {
   process.exit(1);
 });
 
-httpServer.listen(listenPort, () => {
+httpServer.listen(listenPort, listenHost, () => {
+  const corsLabel = Array.isArray(corsOrigin)
+    ? corsOrigin.join(", ")
+    : corsOrigin;
   // eslint-disable-next-line no-console
   console.log(
-    `Socket server listening on http://localhost:${listenPort} (CORS allow: ${CORS_ORIGIN})`,
+    `[socket] Listening on http://${listenHost}:${listenPort} (bind=${listenHost}, PORT=${listenPort})`,
+  );
+  // eslint-disable-next-line no-console
+  console.log(`[socket] CORS origin(s): ${corsLabel}`);
+  // eslint-disable-next-line no-console
+  console.log(
+    `[socket] Seat reclaim grace ONLINE_SEAT_GRACE_MS=${ONLINE_SEAT_GRACE_MS} (purge uses max(60000, this))`,
   );
 });

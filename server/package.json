@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm --prefix .. run dev:server"
+    "dev": "npm --prefix .. run dev:server",
+    "start": "npm --prefix .. run start:server"
   },
   "dependencies": {
     "socket.io": "^4.8.1"

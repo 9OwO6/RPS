@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:server": "npx tsx ./socket-server.ts",
+    "start:server": "npx tsx ./socket-server.ts",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",

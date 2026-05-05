@@ -9,6 +9,7 @@
  */
 import { io, type Socket } from "socket.io-client";
 
+/** Production: set NEXT_PUBLIC_SOCKET_URL to your Socket.IO HTTPS URL (e.g. Render). */
 export function resolveSocketUrl(): string {
   const env = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
   if (env) return env;

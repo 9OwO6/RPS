@@ -164,3 +164,7 @@ npm run smoke:server
 - No database, no matchmaking or rankings.
 - No chat.
 - Invalid join / missing room / reserved seat errors surface via **`error_message`** in the lobby UI.
+
+## Production deployment
+
+See **[ONLINE_DEPLOYMENT_GUIDE.md](./ONLINE_DEPLOYMENT_GUIDE.md)** for Vercel + Socket.IO hosting (`NEXT_PUBLIC_SOCKET_URL`, `CORS_ORIGIN`, free-tier caveats).
