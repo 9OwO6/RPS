@@ -575,6 +575,10 @@ export function BattleScreen({
         <GameOverPanel
           open
           winner={game.winner}
+          finalGameState={game}
+          finisherContext={{
+            mode: battleMode === "VS_AI" ? "VS_AI" : "LOCAL_2P",
+          }}
           onRestart={resetWithSound}
           onBackToStart={
             onBackToStart

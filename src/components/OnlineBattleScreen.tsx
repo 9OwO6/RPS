@@ -705,6 +705,8 @@ export function OnlineBattleScreen({
         <GameOverPanel
           open
           winner={game.winner}
+          finalGameState={game}
+          finisherContext={{ mode: "ONLINE", localPlayerId: playerId }}
           onRestart={restartMatch}
           onBackToStart={() => {
             exitWithLeave();
