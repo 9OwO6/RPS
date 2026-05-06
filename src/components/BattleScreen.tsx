@@ -8,7 +8,6 @@ import Image from "next/image";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CollapsibleBattleLog } from "@/components/CollapsibleBattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
-import { DamageFloat } from "@/components/DamageFloat";
 import { GameOverPanel } from "@/components/GameOverPanel";
 import { PassDeviceOverlay } from "@/components/PassDeviceOverlay";
 import { PlayerPanel } from "@/components/PlayerPanel";
@@ -24,10 +23,6 @@ import { createInitialGameState } from "@/game/initialState";
 import { ASSETS } from "@/lib/assetPaths";
 import { getBattleFeedback } from "@/presentation/battleFeedback";
 import { getCombatAnimationType } from "@/presentation/combatAnimation";
-import {
-  getDamageFloatAccentForVictim,
-  getDamageFloatTier,
-} from "@/presentation/combatMotion";
 import type { GameState, InputAction } from "@/game/types";
 import { resolveRound } from "@/game/resolveRound";
 
@@ -241,7 +236,6 @@ export function BattleScreen({
   }, [combatFrame]);
 
   const feedbackRoundKey = combatFrame?.next.roundNumber ?? 0;
-  const feedbackNext = combatFrame?.next ?? null;
 
   const { pauseBgm, play, playBgm, stopEndStinger } = useSound();
   const endSoundRoundRef = useRef<number | null>(null);
@@ -329,27 +323,12 @@ export function BattleScreen({
 
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-visible lg:min-h-0 lg:gap-1.5 lg:overflow-hidden">
         {/* Opponent (P2) — top band */}
-        <div className="relative shrink-0">
-          {showRoundLedger &&
-          combatFrame &&
-          battleFeedback &&
-          battleFeedback.p2Damage > 0 &&
-          feedbackNext ? (
-            <DamageFloat
-              key={`df-p2-${feedbackRoundKey}`}
-              amount={battleFeedback.p2Damage}
-              tier={getDamageFloatTier(battleFeedback.p2Damage)}
-              accent={getDamageFloatAccentForVictim(
-                "P2",
-                combatFrame.prev,
-                feedbackNext,
-              )}
-            />
-          ) : null}
+          <div className="relative shrink-0">
           <PlayerPanel
             duelSide="right"
             subtitle={battleMode === "VS_AI" ? t("battle.subtitle.aiP2") : t("battle.subtitle.opponentP2")}
             snapshot={game.p2}
+            clashDamagePulse={showRoundLedger && !!battleFeedback?.p2Hit}
             isActiveTurn={activePlayer === "P2"}
             selectedFocusAction={
               battleMode === "LOCAL_2P" &&
@@ -486,27 +465,12 @@ export function BattleScreen({
         </section>
 
         {/* Local duelist (P1) */}
-        <div className="relative shrink-0">
-          {showRoundLedger &&
-          combatFrame &&
-          battleFeedback &&
-          battleFeedback.p1Damage > 0 &&
-          feedbackNext ? (
-            <DamageFloat
-              key={`df-p1-${feedbackRoundKey}`}
-              amount={battleFeedback.p1Damage}
-              tier={getDamageFloatTier(battleFeedback.p1Damage)}
-              accent={getDamageFloatAccentForVictim(
-                "P1",
-                combatFrame.prev,
-                feedbackNext,
-              )}
-            />
-          ) : null}
+          <div className="relative shrink-0">
           <PlayerPanel
             duelSide="left"
             subtitle={t("battle.subtitle.youP1")}
             snapshot={game.p1}
+            clashDamagePulse={showRoundLedger && !!battleFeedback?.p1Hit}
             isActiveTurn={activePlayer === "P1"}
             selectedFocusAction={
               activePlayer === "P1" && p1Pick !== null ? p1Pick : null

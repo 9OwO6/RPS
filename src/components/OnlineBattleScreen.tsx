@@ -16,7 +16,6 @@ import { useSound } from "@/audio/SoundContext";
 import { ActionButtons } from "@/components/ActionButtons";
 import { CollapsibleBattleLog } from "@/components/CollapsibleBattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
-import { DamageFloat } from "@/components/DamageFloat";
 import { GameOverPanel } from "@/components/GameOverPanel";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
@@ -31,10 +30,6 @@ import type { GameState, InputAction, PlayerId } from "@/game/types";
 import { ASSETS } from "@/lib/assetPaths";
 import { getBattleFeedback } from "@/presentation/battleFeedback";
 import { getCombatAnimationType } from "@/presentation/combatAnimation";
-import {
-  getDamageFloatAccentForVictim,
-  getDamageFloatTier,
-} from "@/presentation/combatMotion";
 import type {
   ActionLockedPayload,
   ErrorMessagePayload,
@@ -250,7 +245,6 @@ export function OnlineBattleScreen({
       : false;
 
   const feedbackRoundKey = combatFrame?.next.roundNumber ?? 0;
-  const feedbackNext = combatFrame?.next ?? null;
 
   const { pauseBgm, play, playBgm, stopEndStinger } = useSound();
   const endSoundRoundRef = useRef<number | null>(null);
@@ -510,26 +504,11 @@ export function OnlineBattleScreen({
 
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-visible lg:min-h-0 lg:gap-1.5 lg:overflow-hidden">
           <div className="relative shrink-0">
-            {showRoundLedger &&
-            combatFrame &&
-            battleFeedback &&
-            oppDamage > 0 &&
-            feedbackNext ? (
-              <DamageFloat
-                key={`df-top-${feedbackRoundKey}`}
-                amount={oppDamage}
-                tier={getDamageFloatTier(oppDamage)}
-                accent={getDamageFloatAccentForVictim(
-                  opponentId,
-                  combatFrame.prev,
-                  feedbackNext,
-                )}
-              />
-            ) : null}
             <PlayerPanel
               duelSide="right"
               subtitle={t("battle.opponentLabel", { id: opponentId })}
               snapshot={oppSnap}
+              clashDamagePulse={showRoundLedger && oppHit}
               isActiveTurn={false}
               layoutVariant="hero"
               arenaBand="opponent"
@@ -625,26 +604,11 @@ export function OnlineBattleScreen({
           </section>
 
           <div className="relative shrink-0">
-            {showRoundLedger &&
-            combatFrame &&
-            battleFeedback &&
-            localDamage > 0 &&
-            feedbackNext ? (
-              <DamageFloat
-                key={`df-bot-${feedbackRoundKey}`}
-                amount={localDamage}
-                tier={getDamageFloatTier(localDamage)}
-                accent={getDamageFloatAccentForVictim(
-                  playerId,
-                  combatFrame.prev,
-                  feedbackNext,
-                )}
-              />
-            ) : null}
             <PlayerPanel
               duelSide="left"
               subtitle={t("battle.youLabel", { id: playerId })}
               snapshot={localSnap}
+              clashDamagePulse={showRoundLedger && localHit}
               isActiveTurn={picking && !localLocked}
               selectedFocusAction={picking && selected !== null ? selected : null}
               layoutVariant="hero"

@@ -34,6 +34,8 @@ interface PlayerPanelProps {
   heroControls?: ReactNode;
   /** Portrait-anchored selected maneuver emblem for active player. */
   selectedFocusAction?: InputAction | null;
+  /** Brief clash-resolve feedback on this duelist's panel (presentation only). */
+  clashDamagePulse?: boolean;
 }
 
 function stateBadgeColors(state: PlayerState): string {
@@ -79,6 +81,7 @@ export function PlayerPanel({
   arenaBand = "neutral",
   heroControls,
   selectedFocusAction = null,
+  clashDamagePulse = false,
 }: PlayerPanelProps) {
   const { t } = useI18n();
   const compact = layoutVariant === "arenaCompact";
@@ -181,6 +184,7 @@ export function PlayerPanel({
             ? "p-3 sm:p-4 md:min-h-0"
             : "p-5 shadow-xl md:min-h-[13rem]",
         shakeLayer,
+        clashDamagePulse ? "clash-panel-recoil" : "",
         bandClass,
         !hero
           ? isActiveTurn
@@ -193,6 +197,13 @@ export function PlayerPanel({
       aria-current={isActiveTurn ? "step" : undefined}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+      {clashDamagePulse ? (
+        <span
+          className="pointer-events-none absolute inset-0 z-[4] rounded-2xl clash-panel-flash-overlay"
+          aria-hidden
+        />
+      ) : null}
 
       <div
         className={

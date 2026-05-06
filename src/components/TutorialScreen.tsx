@@ -7,7 +7,6 @@ import { ActionButtons } from "@/components/ActionButtons";
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
 import { CollapsibleBattleLog } from "@/components/CollapsibleBattleLog";
 import { CombatReveal } from "@/components/CombatReveal";
-import { DamageFloat } from "@/components/DamageFloat";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { RulesReminder } from "@/components/RulesReminder";
@@ -22,10 +21,6 @@ import type { GameState, InputAction } from "@/game/types";
 import { TUTORIAL_STEP_COUNT, TUTORIAL_STEPS } from "@/tutorial/tutorialSteps";
 import { getBattleFeedback } from "@/presentation/battleFeedback";
 import { getCombatAnimationType } from "@/presentation/combatAnimation";
-import {
-  getDamageFloatAccentForVictim,
-  getDamageFloatTier,
-} from "@/presentation/combatMotion";
 import { cloneGameState, resolveTutorialRound } from "@/tutorial/tutorialState";
 
 interface TutorialScreenProps {
@@ -190,25 +185,13 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
             <section aria-label="Tutorial duelists" className="space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-2">
                 <div className="relative min-w-0 flex-1">
-                  {phase === "resolved" &&
-                  tutorialBattleFeedback &&
-                  resolvedState &&
-                  tutorialBattleFeedback.p1Damage > 0 ? (
-                    <DamageFloat
-                      key={`t-df-p1-${lessonIndex}-${tutorialFeedbackKey}`}
-                      amount={tutorialBattleFeedback.p1Damage}
-                      tier={getDamageFloatTier(tutorialBattleFeedback.p1Damage)}
-                      accent={getDamageFloatAccentForVictim(
-                        "P1",
-                        cloneGameState(step.startingGameState),
-                        resolvedState,
-                      )}
-                    />
-                  ) : null}
                   <PlayerPanel
                     duelSide="left"
                     subtitle={t("battle.subtitle.youP1")}
                     snapshot={displayGame.p1}
+                    clashDamagePulse={
+                      phase === "resolved" && !!tutorialBattleFeedback?.p1Hit
+                    }
                     layoutVariant="hero"
                     isActiveTurn
                     selectedFocusAction={selectedAction}
@@ -265,25 +248,13 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                   <span className="hidden h-[2px] w-full max-w-[4rem] bg-gradient-to-l from-transparent via-slate-600 to-transparent lg:block lg:h-full lg:w-[2px] lg:max-h-[6rem] lg:bg-gradient-to-b" />
                 </div>
                 <div className="relative min-w-0 flex-1">
-                  {phase === "resolved" &&
-                  tutorialBattleFeedback &&
-                  resolvedState &&
-                  tutorialBattleFeedback.p2Damage > 0 ? (
-                    <DamageFloat
-                      key={`t-df-p2-${lessonIndex}-${tutorialFeedbackKey}`}
-                      amount={tutorialBattleFeedback.p2Damage}
-                      tier={getDamageFloatTier(tutorialBattleFeedback.p2Damage)}
-                      accent={getDamageFloatAccentForVictim(
-                        "P2",
-                        cloneGameState(step.startingGameState),
-                        resolvedState,
-                      )}
-                    />
-                  ) : null}
                   <PlayerPanel
                     duelSide="right"
                     subtitle={t("battle.subtitle.aiP2")}
                     snapshot={displayGame.p2}
+                    clashDamagePulse={
+                      phase === "resolved" && !!tutorialBattleFeedback?.p2Hit
+                    }
                     layoutVariant="hero"
                     isActiveTurn={false}
                     resolveFeedback={

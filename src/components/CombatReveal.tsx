@@ -1,333 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo } from "react";
 
 import { combatAnimationToSoundKey } from "@/audio/combatSoundMap";
 import { useSound } from "@/audio/SoundContext";
-import { localizedCombatCaption, localizedEffectiveTileLabel } from "@/i18n/gameTerms";
+import { CombatClashCinematic } from "@/components/CombatClashCinematic";
+import { localizedCombatCaption } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/useI18n";
-import { ASSETS } from "@/lib/assetPaths";
-import type { EffectiveAction, GameState } from "@/game/types";
+import type { GameState } from "@/game/types";
 import {
   type CombatAnimationType,
-  getActionIconPathFromEffectiveAction,
   getCombatAnimationType,
 } from "@/presentation/combatAnimation";
-import {
-  getEffectiveTileLunge,
-  getEffectiveTileLungeClass,
-} from "@/presentation/combatMotion";
-import {
-  clashIconGlowPaper,
-  clashIconGlowRock,
-  clashIconGlowScissors,
-  effectiveActionIconGlowClass,
-  effectiveActionTileBorderClass,
-} from "@/presentation/actionColors";
-
-function centerMotionClass(type: CombatAnimationType): string {
-  switch (type) {
-    case "SCISSORS_BEATS_PAPER":
-      return "combat-fx-scissors-slash";
-    case "PAPER_COUNTERS_ROCK":
-      return "combat-fx-paper-wrap";
-    case "ROCK_BEATS_SCISSORS":
-      return "combat-fx-rock-drop";
-    case "SCISSORS_CHIPS_ROCK_CHARGE":
-      return "combat-fx-chip";
-    case "ROCK_CHARGE":
-      return "combat-fx-rock-pulse";
-    case "ROCK_HOLD":
-      return "combat-fx-rock-hold";
-    case "MIRROR_SCISSORS":
-    case "MIRROR_ROCK":
-      return "combat-fx-mirror";
-    case "NEUTRAL":
-      return "combat-fx-neutral";
-    case "STAGGER_SKIP":
-    case "INVALID":
-      return "combat-fx-muted-dip";
-    default: {
-      const _e: never = type;
-      return _e;
-    }
-  }
-}
-
-function EffectiveTile({
-  side,
-  action,
-  animSide,
-  animType,
-  nextState,
-}: {
-  side: "P1" | "P2";
-  action: EffectiveAction;
-  animSide: "left" | "right";
-  animType: CombatAnimationType;
-  nextState: GameState;
-}) {
-  const { t } = useI18n();
-  const path = getActionIconPathFromEffectiveAction(action);
-  const label = localizedEffectiveTileLabel(t, action);
-  const slide = animSide === "left" ? "combat-in-left" : "combat-in-right";
-  const lungeClass = getEffectiveTileLungeClass(
-    side,
-    getEffectiveTileLunge(side, animType, nextState),
-  );
-
-  const tileBorder = effectiveActionTileBorderClass(action);
-
-  return (
-    <div
-      className={`flex flex-col items-center gap-2 rounded-xl border bg-slate-950/75 p-4 shadow-inner backdrop-blur-sm lg:gap-1.5 lg:p-2.5 ${tileBorder} ${slide} ${lungeClass}`}
-    >
-      <span className="text-[0.6rem] font-bold uppercase tracking-[0.35em] text-slate-500">
-        {side}
-      </span>
-      {path ? (
-        <div
-          className={`relative h-[4.75rem] w-[4.75rem] p-1 sm:h-[5.1rem] sm:w-[5.1rem] lg:h-[3.5rem] lg:w-[3.5rem] ${effectiveActionIconGlowClass(action)}`}
-        >
-          <Image
-            src={path}
-            alt=""
-            fill
-            sizes="(max-width: 1024px) 84px, 56px"
-            className="object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
-          />
-        </div>
-      ) : (
-        <span className="rounded-md border border-slate-600/70 bg-slate-950/70 px-2 py-1 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">
-          {action === "STUNNED_SKIP"
-            ? t("effective.tile.skip")
-            : t("effective.tile.invalid")}
-        </span>
-      )}
-      <span className="max-w-[10rem] text-center text-[0.74rem] leading-snug text-slate-300 lg:text-[0.7rem]">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function ClashCenter({ type }: { type: CombatAnimationType }) {
-  const { t } = useI18n();
-  const motion = centerMotionClass(type);
-  const rock = ASSETS.actions.ROCK;
-  const paper = ASSETS.actions.PAPER;
-  const scissors = ASSETS.actions.SCISSORS;
-
-  if (type === "STAGGER_SKIP" || type === "INVALID") {
-    return (
-      <div
-        className={`flex min-h-[5.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-black/40 px-4 py-3 ${motion}`}
-      >
-        <span className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-slate-400">
-          {type === "INVALID"
-            ? t("clash.brokenForm")
-            : t("clash.yieldedBeat")}
-        </span>
-        <span className="text-center text-xs text-slate-500">
-          {type === "INVALID"
-            ? t("clash.invalidHint")
-            : t("clash.staggerHint")}
-        </span>
-      </div>
-    );
-  }
-
-  if (type === "MIRROR_SCISSORS") {
-    return (
-      <div
-        className={`flex min-h-[6.5rem] items-center justify-center gap-3 ${motion}`}
-      >
-        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
-          <Image
-            src={scissors}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowScissors()}`}
-          />
-        </div>
-        <span className="text-lg font-black text-slate-500/90">×</span>
-        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
-          <Image
-            src={scissors}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowScissors()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "MIRROR_ROCK") {
-    return (
-      <div
-        className={`flex min-h-[6.5rem] items-center justify-center gap-3 ${motion}`}
-      >
-        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-        <span className="text-lg font-black text-slate-500/90">×</span>
-        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "SCISSORS_BEATS_PAPER") {
-    return (
-      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center">
-        <div className="relative h-[4rem] w-[4rem] opacity-55 lg:h-[3.15rem] lg:w-[3.15rem]">
-          <Image
-            src={paper}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowPaper()}`}
-          />
-        </div>
-        <div className={`scissors-slash-host relative z-10 h-[5rem] w-[5rem] lg:h-[3.9rem] lg:w-[3.9rem] ${motion}`}>
-          <Image
-            src={scissors}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowScissors()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "PAPER_COUNTERS_ROCK") {
-    return (
-      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center">
-        <div className="relative z-0 h-[3.6rem] w-[3.6rem] opacity-60 lg:h-[2.9rem] lg:w-[2.9rem]">
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-        <div className={`paper-counter-halo relative z-10 -ml-4 h-[5rem] w-[5rem] lg:h-[3.9rem] lg:w-[3.9rem] ${motion}`}>
-          <Image
-            src={paper}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowPaper()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "ROCK_BEATS_SCISSORS") {
-    return (
-      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] flex-col items-center justify-end gap-1">
-        <div className={`relative h-[5.25rem] w-[5.25rem] lg:h-[4.15rem] lg:w-[4.15rem] ${motion}`}>
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-        <div className="relative h-[3.15rem] w-[3.15rem] opacity-70 lg:h-[2.4rem] lg:w-[2.4rem]">
-          <Image
-            src={scissors}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowScissors()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === "SCISSORS_CHIPS_ROCK_CHARGE") {
-    return (
-      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center gap-2">
-        <div className={`chip-spark-host relative h-[4.35rem] w-[4.35rem] lg:h-[3.45rem] lg:w-[3.45rem] ${motion}`}>
-          <Image
-            src={scissors}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowScissors()}`}
-          />
-        </div>
-        <div className="relative h-[3.35rem] w-[3.35rem] opacity-70 lg:h-[2.7rem] lg:w-[2.7rem]">
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-        <span className="absolute bottom-1 rounded border border-slate-700/60 bg-slate-950/90 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">
-          {t("clash.chipBadge")}
-        </span>
-      </div>
-    );
-  }
-
-  if (type === "ROCK_CHARGE" || type === "ROCK_HOLD") {
-    return (
-      <div
-        className={`flex min-h-[6.5rem] items-center justify-center ${motion}`}
-      >
-        <div className="relative h-[5.35rem] w-[5.35rem] lg:h-[4.15rem] lg:w-[4.15rem]">
-          <Image
-            src={rock}
-            alt=""
-            fill
-            className={`object-contain ${clashIconGlowRock()}`}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`flex min-h-[6.5rem] items-center justify-center rounded-xl border border-slate-800/80 bg-slate-950/40 px-6 ${motion}`}
-    >
-      <div className="relative h-[3.4rem] w-[3.4rem] opacity-75 lg:h-[2.7rem] lg:w-[2.7rem]">
-        <Image
-          src={rock}
-          alt=""
-          fill
-          className={`object-contain ${clashIconGlowRock()}`}
-        />
-      </div>
-      <span className="mx-3 text-xs font-bold uppercase tracking-widest text-slate-500">
-        vs
-      </span>
-      <div className="relative h-[3.4rem] w-[3.4rem] opacity-75 lg:h-[2.7rem] lg:w-[2.7rem]">
-        <Image
-          src={scissors}
-          alt=""
-          fill
-          className={`object-contain ${clashIconGlowScissors()}`}
-        />
-      </div>
-    </div>
-  );
-}
 
 interface CombatRevealProps {
   prevState: GameState;
@@ -344,7 +28,7 @@ export function CombatReveal({
   const { play } = useSound();
   const { t } = useI18n();
   const le = nextState.lastEffectiveActions;
-  const animType = useMemo(
+  const animType: CombatAnimationType = useMemo(
     () => getCombatAnimationType(prevState, nextState),
     [prevState, nextState],
   );
@@ -377,25 +61,11 @@ export function CombatReveal({
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 items-stretch gap-5 md:grid-cols-[1fr_minmax(12rem,16rem)_1fr] md:gap-3 lg:mt-2 lg:grid-cols-[1fr_minmax(10rem,13rem)_1fr] lg:gap-2.5">
-        <EffectiveTile
-          side="P1"
-          action={le.p1}
-          animSide="left"
-          animType={animType}
-          nextState={nextState}
-        />
-        <div className="combat-stage-well flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-800/70 bg-black/25 py-5 md:border md:py-4 lg:py-2.5">
-          <ClashCenter type={animType} />
-        </div>
-        <EffectiveTile
-          side="P2"
-          action={le.p2}
-          animSide="right"
-          animType={animType}
-          nextState={nextState}
-        />
-      </div>
+      <CombatClashCinematic
+        prevState={prevState}
+        nextState={nextState}
+        replayKey={replayKey}
+      />
 
       <p className="mt-4 text-center text-xs font-medium leading-snug text-slate-200 sm:text-sm lg:mt-2 lg:text-[0.7rem]">
         {caption}
