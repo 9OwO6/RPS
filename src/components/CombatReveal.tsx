@@ -81,20 +81,20 @@ function EffectiveTile({
 
   return (
     <div
-      className={`flex flex-col items-center gap-2 rounded-xl border bg-slate-950/75 p-4 shadow-inner backdrop-blur-sm lg:gap-1 lg:p-2 ${tileBorder} ${slide} ${lungeClass}`}
+      className={`flex flex-col items-center gap-2 rounded-xl border bg-slate-950/75 p-4 shadow-inner backdrop-blur-sm lg:gap-1.5 lg:p-2.5 ${tileBorder} ${slide} ${lungeClass}`}
     >
       <span className="text-[0.6rem] font-bold uppercase tracking-[0.35em] text-slate-500">
         {side}
       </span>
       {path ? (
         <div
-          className={`relative h-16 w-16 p-1 lg:h-12 lg:w-12 ${effectiveActionIconGlowClass(action)}`}
+          className={`relative h-[4.75rem] w-[4.75rem] p-1 sm:h-[5.1rem] sm:w-[5.1rem] lg:h-[3.5rem] lg:w-[3.5rem] ${effectiveActionIconGlowClass(action)}`}
         >
           <Image
             src={path}
             alt=""
             fill
-            sizes="64px"
+            sizes="(max-width: 1024px) 84px, 56px"
             className="object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
           />
         </div>
@@ -105,7 +105,7 @@ function EffectiveTile({
             : t("effective.tile.invalid")}
         </span>
       )}
-      <span className="max-w-[10rem] text-center text-[0.7rem] leading-snug text-slate-400">
+      <span className="max-w-[10rem] text-center text-[0.74rem] leading-snug text-slate-300 lg:text-[0.7rem]">
         {label}
       </span>
     </div>
@@ -141,9 +141,9 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
   if (type === "MIRROR_SCISSORS") {
     return (
       <div
-        className={`flex min-h-[5.5rem] items-center justify-center gap-3 ${motion}`}
+        className={`flex min-h-[6.5rem] items-center justify-center gap-3 ${motion}`}
       >
-        <div className="relative h-14 w-14">
+        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
           <Image
             src={scissors}
             alt=""
@@ -152,7 +152,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
           />
         </div>
         <span className="text-lg font-black text-slate-500/90">×</span>
-        <div className="relative h-14 w-14">
+        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
           <Image
             src={scissors}
             alt=""
@@ -167,9 +167,9 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
   if (type === "MIRROR_ROCK") {
     return (
       <div
-        className={`flex min-h-[5.5rem] items-center justify-center gap-3 ${motion}`}
+        className={`flex min-h-[6.5rem] items-center justify-center gap-3 ${motion}`}
       >
-        <div className="relative h-14 w-14">
+        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
           <Image
             src={rock}
             alt=""
@@ -178,7 +178,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
           />
         </div>
         <span className="text-lg font-black text-slate-500/90">×</span>
-        <div className="relative h-14 w-14">
+        <div className="relative h-[4.25rem] w-[4.25rem] lg:h-[3.4rem] lg:w-[3.4rem]">
           <Image
             src={rock}
             alt=""
@@ -192,8 +192,8 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
 
   if (type === "SCISSORS_BEATS_PAPER") {
     return (
-      <div className="relative flex min-h-[5.5rem] w-full max-w-[14rem] items-center justify-center">
-        <div className="relative h-14 w-14 opacity-55">
+      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center">
+        <div className="relative h-[4rem] w-[4rem] opacity-55 lg:h-[3.15rem] lg:w-[3.15rem]">
           <Image
             src={paper}
             alt=""
@@ -201,7 +201,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowPaper()}`}
           />
         </div>
-        <div className={`scissors-slash-host relative z-10 h-16 w-16 ${motion}`}>
+        <div className={`scissors-slash-host relative z-10 h-[5rem] w-[5rem] lg:h-[3.9rem] lg:w-[3.9rem] ${motion}`}>
           <Image
             src={scissors}
             alt=""
@@ -215,8 +215,8 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
 
   if (type === "PAPER_COUNTERS_ROCK") {
     return (
-      <div className="relative flex min-h-[5.5rem] w-full max-w-[14rem] items-center justify-center">
-        <div className="relative z-0 h-12 w-12 opacity-60">
+      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center">
+        <div className="relative z-0 h-[3.6rem] w-[3.6rem] opacity-60 lg:h-[2.9rem] lg:w-[2.9rem]">
           <Image
             src={rock}
             alt=""
@@ -224,7 +224,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowRock()}`}
           />
         </div>
-        <div className={`paper-counter-halo relative z-10 -ml-4 h-16 w-16 ${motion}`}>
+        <div className={`paper-counter-halo relative z-10 -ml-4 h-[5rem] w-[5rem] lg:h-[3.9rem] lg:w-[3.9rem] ${motion}`}>
           <Image
             src={paper}
             alt=""
@@ -238,8 +238,8 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
 
   if (type === "ROCK_BEATS_SCISSORS") {
     return (
-      <div className="relative flex min-h-[5.5rem] w-full max-w-[14rem] flex-col items-center justify-end gap-1">
-        <div className={`relative h-[4.25rem] w-[4.25rem] ${motion}`}>
+      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] flex-col items-center justify-end gap-1">
+        <div className={`relative h-[5.25rem] w-[5.25rem] lg:h-[4.15rem] lg:w-[4.15rem] ${motion}`}>
           <Image
             src={rock}
             alt=""
@@ -247,7 +247,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowRock()}`}
           />
         </div>
-        <div className="relative h-10 w-10 opacity-70">
+        <div className="relative h-[3.15rem] w-[3.15rem] opacity-70 lg:h-[2.4rem] lg:w-[2.4rem]">
           <Image
             src={scissors}
             alt=""
@@ -261,8 +261,8 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
 
   if (type === "SCISSORS_CHIPS_ROCK_CHARGE") {
     return (
-      <div className="relative flex min-h-[5.5rem] w-full max-w-[14rem] items-center justify-center gap-2">
-        <div className={`chip-spark-host relative h-14 w-14 ${motion}`}>
+      <div className="relative flex min-h-[6.5rem] w-full max-w-[15.5rem] items-center justify-center gap-2">
+        <div className={`chip-spark-host relative h-[4.35rem] w-[4.35rem] lg:h-[3.45rem] lg:w-[3.45rem] ${motion}`}>
           <Image
             src={scissors}
             alt=""
@@ -270,7 +270,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
             className={`object-contain ${clashIconGlowScissors()}`}
           />
         </div>
-        <div className="relative h-12 w-12 opacity-70">
+        <div className="relative h-[3.35rem] w-[3.35rem] opacity-70 lg:h-[2.7rem] lg:w-[2.7rem]">
           <Image
             src={rock}
             alt=""
@@ -288,9 +288,9 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
   if (type === "ROCK_CHARGE" || type === "ROCK_HOLD") {
     return (
       <div
-        className={`flex min-h-[5.5rem] items-center justify-center ${motion}`}
+        className={`flex min-h-[6.5rem] items-center justify-center ${motion}`}
       >
-        <div className="relative h-[4.5rem] w-[4.5rem]">
+        <div className="relative h-[5.35rem] w-[5.35rem] lg:h-[4.15rem] lg:w-[4.15rem]">
           <Image
             src={rock}
             alt=""
@@ -304,9 +304,9 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
 
   return (
     <div
-      className={`flex min-h-[5.5rem] items-center justify-center rounded-xl border border-slate-800/80 bg-slate-950/40 px-6 ${motion}`}
+      className={`flex min-h-[6.5rem] items-center justify-center rounded-xl border border-slate-800/80 bg-slate-950/40 px-6 ${motion}`}
     >
-      <div className="relative h-12 w-12 opacity-75">
+      <div className="relative h-[3.4rem] w-[3.4rem] opacity-75 lg:h-[2.7rem] lg:w-[2.7rem]">
         <Image
           src={rock}
           alt=""
@@ -317,7 +317,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
       <span className="mx-3 text-xs font-bold uppercase tracking-widest text-slate-500">
         vs
       </span>
-      <div className="relative h-12 w-12 opacity-75">
+      <div className="relative h-[3.4rem] w-[3.4rem] opacity-75 lg:h-[2.7rem] lg:w-[2.7rem]">
         <Image
           src={scissors}
           alt=""
@@ -377,7 +377,7 @@ export function CombatReveal({
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 items-stretch gap-5 md:grid-cols-[1fr_minmax(11rem,15rem)_1fr] md:gap-3 lg:mt-2 lg:grid-cols-[1fr_minmax(8.5rem,12rem)_1fr] lg:gap-2">
+      <div className="mt-4 grid grid-cols-1 items-stretch gap-5 md:grid-cols-[1fr_minmax(12rem,16rem)_1fr] md:gap-3 lg:mt-2 lg:grid-cols-[1fr_minmax(10rem,13rem)_1fr] lg:gap-2.5">
         <EffectiveTile
           side="P1"
           action={le.p1}

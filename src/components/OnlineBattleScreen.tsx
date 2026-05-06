@@ -430,7 +430,7 @@ export function OnlineBattleScreen({
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_0%,rgba(251,191,36,0.06),transparent_55%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-3 pb-28 pt-4 md:max-w-3xl lg:min-h-0 lg:gap-2 lg:overflow-hidden lg:px-5 lg:pb-2 lg:pt-2">
+      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-3 pb-20 pt-4 md:max-w-4xl xl:max-w-5xl lg:min-h-0 lg:gap-2 lg:overflow-hidden lg:px-5 lg:pb-2 lg:pt-2">
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3 lg:gap-2 lg:border-slate-800/60 lg:pb-2 lg:pt-0">
           <div className="min-w-0">
             <p className="text-[0.55rem] font-bold uppercase tracking-[0.35em] text-amber-600/90 lg:text-[0.5rem] lg:tracking-[0.32em]">
@@ -589,6 +589,39 @@ export function OnlineBattleScreen({
                 </div>
               )}
             </div>
+
+            {game.phase === "ROUND_END" ? (
+              <div className="shrink-0 space-y-3 border-t border-slate-800/65 bg-slate-950/45 px-3 py-3 lg:space-y-2 lg:py-2">
+                {!localNextReady ? (
+                  <button
+                    type="button"
+                    disabled={opponentDisconnected}
+                    onClick={signalReadyForNextRound}
+                    className="w-full rounded-xl border border-amber-700/50 bg-amber-950/30 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/50 disabled:cursor-not-allowed disabled:opacity-40 lg:rounded-lg lg:py-2 lg:text-[0.65rem]"
+                  >
+                    {t("online.battle.readyNext")}
+                  </button>
+                ) : (
+                  <p className="text-center text-sm font-semibold text-emerald-200/95 lg:text-xs">
+                    {t("online.battle.youReady")}
+                  </p>
+                )}
+                {opponentNextReady ? (
+                  <p className="text-center text-sm font-semibold text-slate-200 lg:text-xs">
+                    {t("online.battle.opponentReady")}
+                  </p>
+                ) : null}
+                {roomState.nextRoundCountdownEndsAt !== undefined ? (
+                  <p className="text-center text-xs tabular-nums text-amber-200/90 lg:text-[0.65rem]">
+                    {countdownSeconds !== null && countdownSeconds > 0
+                      ? t("online.battle.countdown", {
+                          n: countdownSeconds,
+                        })
+                      : t("online.battle.countdownSoon")}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </section>
 
           <div className="relative shrink-0">
@@ -613,6 +646,7 @@ export function OnlineBattleScreen({
               subtitle={t("battle.youLabel", { id: playerId })}
               snapshot={localSnap}
               isActiveTurn={picking && !localLocked}
+              selectedFocusAction={picking && selected !== null ? selected : null}
               layoutVariant="hero"
               arenaBand="local"
               resolveFeedback={
@@ -625,100 +659,71 @@ export function OnlineBattleScreen({
                     }
                   : null
               }
+              heroControls={
+                picking ? (
+                  <div className="space-y-3 lg:space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h2 className="text-[0.58rem] font-black uppercase tracking-[0.3em] text-slate-500 sm:text-[0.62rem] lg:text-[0.56rem]">
+                        {t("battle.modeDeck")}
+                      </h2>
+                      {!localLocked ? (
+                        <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-amber-300/90 sm:text-[0.6rem]">
+                          {t("online.battle.lockWhenReady")}
+                        </span>
+                      ) : null}
+                    </div>
+                    {localSnap.state === "STAGGERED" ? (
+                      <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm leading-snug text-red-100">
+                        {t("online.battle.staggerAuto")}
+                      </p>
+                    ) : (
+                      <>
+                        {!localLocked ? (
+                          <ActionButtons
+                            variant="deck"
+                            density="hud"
+                            playerSnapshot={localSnap}
+                            selected={selected}
+                            onSelect={setSelected}
+                            disabled={
+                              localLocked || opponentDisconnected || !picking
+                            }
+                          />
+                        ) : (
+                          <p className="rounded-lg border border-slate-800/70 bg-slate-950/40 px-3 py-2 text-[0.75rem] leading-snug text-slate-300 lg:text-[0.68rem]">
+                            {t("online.hud.youLocked")}
+                          </p>
+                        )}
+                        {!localLocked ? (
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={
+                                selected === null ||
+                                opponentDisconnected ||
+                                !picking
+                              }
+                              onClick={lockIn}
+                              className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
+                            >
+                              {t("online.battle.lockIn")}
+                            </button>
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                    <p className="text-[0.68rem] leading-snug text-slate-500 lg:text-[0.62rem]">
+                      {t("battle.deckHint")}
+                    </p>
+                    <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.65rem] leading-snug text-slate-500 lg:text-[0.6rem]">
+                      {t("online.battle.hiddenNote")}
+                    </p>
+                  </div>
+                ) : undefined
+              }
             />
           </div>
 
-          <section
-            aria-label="Maneuver selection"
-            className="shrink-0 rounded-2xl border border-slate-800/90 bg-slate-950/60 p-3 shadow-xl backdrop-blur-md md:p-5 lg:p-2.5 lg:shadow-lg"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 lg:pb-1.5">
-              <h2 className="text-[0.65rem] font-black uppercase tracking-[0.32em] text-slate-500 lg:text-[0.58rem]">
-                {t("battle.modeDeck")}
-              </h2>
-              {picking && !localLocked ? (
-                <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-amber-300/90 lg:py-0 lg:text-[0.55rem]">
-                  {t("online.battle.lockWhenReady")}
-                </span>
-              ) : null}
-            </div>
-
-            <div className="mt-4 space-y-4 lg:mt-2 lg:space-y-2">
-              {picking && localSnap.state !== "STAGGERED" ? (
-                <>
-                  <ActionButtons
-                    variant="deck"
-                    density="hud"
-                    playerSnapshot={localSnap}
-                    selected={selected}
-                    onSelect={setSelected}
-                    disabled={
-                      localLocked || opponentDisconnected || !picking
-                    }
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      disabled={
-                        selected === null ||
-                        localLocked ||
-                        opponentDisconnected ||
-                        !picking
-                      }
-                      onClick={lockIn}
-                      className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
-                    >
-                      {t("online.battle.lockIn")}
-                    </button>
-                  </div>
-                </>
-              ) : null}
-
-              {picking && localSnap.state === "STAGGERED" ? (
-                <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                  {t("online.battle.staggerAuto")}
-                </p>
-              ) : null}
-
-              {game.phase === "ROUND_END" ? (
-                <div className="space-y-3 rounded-xl border border-slate-800/80 bg-slate-950/40 p-3">
-                  {!localNextReady ? (
-                    <button
-                      type="button"
-                      disabled={opponentDisconnected}
-                      onClick={signalReadyForNextRound}
-                      className="rounded-xl border border-amber-700/50 bg-amber-950/30 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/50 disabled:cursor-not-allowed disabled:opacity-40 lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
-                    >
-                      {t("online.battle.readyNext")}
-                    </button>
-                  ) : (
-                    <p className="text-sm font-semibold text-emerald-200/95">
-                      {t("online.battle.youReady")}
-                    </p>
-                  )}
-                  {opponentNextReady ? (
-                    <p className="text-sm font-semibold text-slate-200">
-                      {t("online.battle.opponentReady")}
-                    </p>
-                  ) : null}
-                  {roomState.nextRoundCountdownEndsAt !== undefined &&
-                  game.phase === "ROUND_END" ? (
-                    <p className="text-xs tabular-nums text-amber-200/90">
-                      {countdownSeconds !== null && countdownSeconds > 0
-                        ? t("online.battle.countdown", {
-                            n: countdownSeconds,
-                          })
-                        : t("online.battle.countdownSoon")}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-
-              <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.7rem] text-slate-500">
-                {t("online.battle.hiddenNote")}
-              </p>
-            </div>
-          </section>
         </div>
 
         <div className="mt-2 lg:mt-1 lg:shrink-0">

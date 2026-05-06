@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { SelectedManeuverCinematic } from "@/components/SelectedManeuverCinematic";
 import { INITIAL_HP } from "@/game/constants";
 import { playerStateLongKey, playerStateShortKey } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/useI18n";
 import { ASSETS } from "@/lib/assetPaths";
-import type { PlayerSnapshot, PlayerState } from "@/game/types";
+import type { InputAction, PlayerSnapshot, PlayerState } from "@/game/types";
 
 /** Snapshot diff after resolve — drives hit shake / stagger pulse only. */
 export interface PlayerResolveFeedback {
@@ -29,6 +30,10 @@ interface PlayerPanelProps {
   layoutVariant?: "standard" | "arenaCompact" | "hero";
   /** Visual banding for symmetric duel layout. */
   arenaBand?: "neutral" | "opponent" | "local";
+  /** Extra controls (maneuver deck, lock buttons) shown inside hero stats column. */
+  heroControls?: ReactNode;
+  /** Portrait-anchored selected maneuver emblem for active player. */
+  selectedFocusAction?: InputAction | null;
 }
 
 function stateBadgeColors(state: PlayerState): string {
@@ -72,6 +77,8 @@ export function PlayerPanel({
   resolveFeedback = null,
   layoutVariant = "standard",
   arenaBand = "neutral",
+  heroControls,
+  selectedFocusAction = null,
 }: PlayerPanelProps) {
   const { t } = useI18n();
   const compact = layoutVariant === "arenaCompact";
@@ -126,6 +133,9 @@ export function PlayerPanel({
   const badge = snapshot.id === "P1" ? "P1" : "P2";
   const portraitSrc =
     snapshot.id === "P1" ? ASSETS.portraits.P1 : ASSETS.portraits.P2;
+  const focusIconSrc = selectedFocusAction
+    ? ASSETS.actions[selectedFocusAction]
+    : null;
 
   const portraitWrap = [
     "relative shrink-0 overflow-hidden rounded-xl border shadow-md ring-1 ring-white/10",
@@ -164,7 +174,7 @@ export function PlayerPanel({
       className={[
         "relative overflow-hidden rounded-2xl border backdrop-blur-md transition",
         hero
-          ? "border-slate-800/70 bg-gradient-to-br from-slate-950/75 via-slate-950/55 to-black/40 p-3 shadow-lg sm:p-4 md:min-h-0 lg:p-2.5"
+          ? "border-slate-800/70 bg-gradient-to-br from-slate-950/75 via-slate-950/55 to-black/40 p-3 shadow-lg sm:p-4 md:min-h-0 lg:p-3.5"
           : compact
             ? "p-3 sm:p-4 md:min-h-0"
             : "p-5 shadow-xl md:min-h-[13rem]",
@@ -185,14 +195,14 @@ export function PlayerPanel({
       <div
         className={
           hero
-            ? `flex items-stretch gap-3 sm:gap-4 md:gap-5 lg:gap-2.5 ${duelSide === "right" ? "flex-row-reverse" : "flex-row"}`
+            ? `flex flex-col items-stretch gap-4 sm:gap-5 md:flex-row md:items-start md:gap-5 lg:gap-6 ${duelSide === "right" ? "md:flex-row-reverse" : ""}`
             : `flex flex-col gap-3 sm:flex-row ${duelSide === "right" ? "sm:flex-row-reverse" : ""}`
         }
       >
         <figure
           className={
             hero
-              ? `${heroPortraitShell} aspect-[4/5] w-[min(46vw,14rem)] min-w-[9rem] max-w-[17.5rem] sm:w-[min(42vw,15rem)] md:max-w-[18rem] lg:max-w-[15rem] lg:min-w-[7.5rem] lg:w-[min(32vw,15rem)]`
+              ? `${heroPortraitShell} mx-auto aspect-[4/5] w-[min(88vw,17.5rem)] max-w-[17.5rem] shrink-0 grow-0 self-start sm:w-[min(46vw,15rem)] md:mx-0 md:w-[min(42vw,16rem)] md:max-w-[18rem] md:min-w-[10rem] lg:w-[min(36vw,17.5rem)] lg:max-w-[17.5rem] lg:min-w-[11rem]`
               : portraitWrap
           }
           aria-hidden
@@ -203,7 +213,7 @@ export function PlayerPanel({
             fill
             sizes={
               hero
-                ? "(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 240px"
+                ? "(max-width: 768px) 50vw, (max-width: 1280px) 30vw, 320px"
                 : compact
                   ? "(max-width: 640px) 48px, 56px"
                   : "(max-width: 640px) 56px, 76px"
@@ -221,10 +231,20 @@ export function PlayerPanel({
               aria-hidden
             />
           ) : null}
+          {hero && selectedFocusAction && focusIconSrc ? (
+            <SelectedManeuverCinematic
+              action={selectedFocusAction}
+              iconSrc={focusIconSrc}
+              anchorLeftPx={null}
+              variant="portrait"
+              portraitSide={duelSide === "right" ? "left" : "right"}
+            />
+          ) : null}
         </figure>
 
-        <div className="min-w-0 flex-1">
-          <header className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="shrink-0">
+            <header className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-[0.6rem] font-bold uppercase tracking-[0.32em] text-slate-500 lg:text-[0.55rem]">
                 {subtitle}
@@ -261,17 +281,17 @@ export function PlayerPanel({
                 </span>
               </p>
             </div>
-          </header>
+            </header>
 
-          <div
-            className={
-              hero
-                ? "mt-2 space-y-0.5"
-                : compact
-                  ? "mt-2 space-y-1"
-                  : "mt-4 space-y-1.5"
-            }
-          >
+            <div
+              className={
+                hero
+                  ? "mt-2 space-y-0.5"
+                  : compact
+                    ? "mt-2 space-y-1"
+                    : "mt-4 space-y-1.5"
+              }
+            >
             <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-950 ring-1 ring-slate-800 sm:h-2.5 md:h-3">
               <div
                 role="presentation"
@@ -296,58 +316,70 @@ export function PlayerPanel({
                 : compact
                   ? t("player.hpTrailCompact", { pct: hpPct })
                   : t("player.hpTrailStandard", { pct: hpPct })}
-            </p>
-          </div>
+              </p>
+            </div>
 
-          <div
-            className={
-              hero
-                ? "mt-2 flex flex-wrap items-center gap-1.5"
-                : compact
+            <div
+              className={
+                hero
                   ? "mt-2 flex flex-wrap items-center gap-1.5"
-                  : "mt-4 flex flex-wrap items-center gap-2"
-            }
-          >
-            <span
-              className={[
-                "rounded-md border px-2 py-0.5 font-mono text-[0.65rem] font-bold uppercase tracking-wider shadow-sm ring-1 sm:px-2.5 sm:py-1",
-                stateBadgeColors(snapshot.state),
-                snapshot.state === "STAGGERED" && staggerPulse
-                  ? "stagger-pulse-once"
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              title={t(playerStateLongKey(snapshot.state))}
+                  : compact
+                    ? "mt-2 flex flex-wrap items-center gap-1.5"
+                    : "mt-4 flex flex-wrap items-center gap-2"
+              }
             >
-              {t(playerStateShortKey(snapshot.state))}
-            </span>
-            {snapshot.state === "STAGGERED" && staggerPulse ? (
-              <span className="stagger-callout rounded border border-red-800/50 bg-red-950/40 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-red-200/95 sm:text-[0.6rem]">
-                {t("player.staggerBadge")}
+              <span
+                className={[
+                  "rounded-md border px-2 py-0.5 font-mono text-[0.65rem] font-bold uppercase tracking-wider shadow-sm ring-1 sm:px-2.5 sm:py-1",
+                  stateBadgeColors(snapshot.state),
+                  snapshot.state === "STAGGERED" && staggerPulse
+                    ? "stagger-pulse-once"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={t(playerStateLongKey(snapshot.state))}
+              >
+                {t(playerStateShortKey(snapshot.state))}
               </span>
-            ) : null}
-            {!compact && !hero ? (
-              <span className="text-[0.7rem] text-slate-500">
-                {t(playerStateLongKey(snapshot.state))}
-              </span>
+              {snapshot.state === "STAGGERED" && staggerPulse ? (
+                <span className="stagger-callout rounded border border-red-800/50 bg-red-950/40 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-red-200/95 sm:text-[0.6rem]">
+                  {t("player.staggerBadge")}
+                </span>
+              ) : null}
+              {!compact && !hero ? (
+                <span className="text-[0.7rem] text-slate-500">
+                  {t(playerStateLongKey(snapshot.state))}
+                </span>
+              ) : null}
+            </div>
+
+            {hero ? (
+              <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-slate-800/35 pt-2.5 lg:mt-1.5 lg:gap-1.5 lg:border-t-0 lg:pt-1">
+                <span
+                  className="rounded-full border border-red-950/40 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-red-200/90"
+                  title={t("player.titlePaperChain")}
+                >
+                  P·{snapshot.paperStreak}
+                </span>
+                <span
+                  className="rounded-full border border-slate-600/50 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-slate-200/90"
+                  title={t("player.titleScissorsChain")}
+                >
+                  S·{snapshot.scissorsStreak}
+                </span>
+              </div>
             ) : null}
           </div>
 
-          {hero ? (
-            <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-slate-800/35 pt-2.5 lg:mt-1.5 lg:gap-1.5 lg:border-t-0 lg:pt-1">
-              <span
-                className="rounded-full border border-red-950/40 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-red-200/90"
-                title={t("player.titlePaperChain")}
-              >
-                P·{snapshot.paperStreak}
-              </span>
-              <span
-                className="rounded-full border border-slate-600/50 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-slate-200/90"
-                title={t("player.titleScissorsChain")}
-              >
-                S·{snapshot.scissorsStreak}
-              </span>
+          {hero && heroControls && isActiveTurn ? (
+            <p className="mt-2 shrink-0 text-left text-[0.58rem] font-bold uppercase tracking-[0.26em] text-amber-400/95 sm:text-[0.6rem] lg:text-[0.56rem]">
+              {t("player.activeCommit")}
+            </p>
+          ) : null}
+          {hero && heroControls ? (
+            <div className="mt-3 min-h-0 min-w-0 flex-1 space-y-3 rounded-xl border border-slate-800/45 bg-black/22 pt-3 shadow-inner sm:mt-4 sm:space-y-3 sm:p-3 sm:pt-3 lg:mt-4 lg:space-y-2.5">
+              {heroControls}
             </div>
           ) : null}
         </div>
@@ -386,7 +418,7 @@ export function PlayerPanel({
         </p>
       ) : null}
 
-      {snapshot.state === "STAGGERED" && (compact || hero) ? (
+      {snapshot.state === "STAGGERED" && (compact || hero) && !(hero && heroControls) ? (
         <p
           className={
             hero
@@ -398,7 +430,7 @@ export function PlayerPanel({
         </p>
       ) : null}
 
-      {isActiveTurn ? (
+      {isActiveTurn && !(hero && heroControls) ? (
         <p
           className={
             hero

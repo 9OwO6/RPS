@@ -49,6 +49,7 @@ export const battle: Record<Locale, Record<string, string>> = {
     "battle.opponentLabel": "Opponent · {id}",
     "battle.youLabel": "You · {id}",
     "battle.roundCounter": "Round {n}",
+    "battle.deckHint": "Choose a maneuver, then lock in.",
   },
   zh: {
     "battle.passPlay": "本地双人",
@@ -97,5 +98,6 @@ export const battle: Record<Locale, Record<string, string>> = {
     "battle.opponentLabel": "对手 · {id}",
     "battle.youLabel": "你 · {id}",
     "battle.roundCounter": "第 {n} 回合",
+    "battle.deckHint": "选择招式后锁定。",
   },
 };

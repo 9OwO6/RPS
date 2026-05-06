@@ -211,6 +211,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                     snapshot={displayGame.p1}
                     layoutVariant="hero"
                     isActiveTurn
+                    selectedFocusAction={selectedAction}
                     resolveFeedback={
                       phase === "resolved" && tutorialBattleFeedback
                         ? {
@@ -220,6 +221,39 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                             damageTaken: tutorialBattleFeedback.p1Damage,
                           }
                         : null
+                    }
+                    heroControls={
+                      showActionMatrix ? (
+                        <div className="space-y-4 lg:space-y-3">
+                          <div>
+                            <h3 className="text-[0.62rem] font-black uppercase tracking-[0.32em] text-slate-500 sm:text-xs">
+                              {t("tutorial.yourManeuver")}
+                            </h3>
+                            <p className="mt-1 text-[0.72rem] leading-snug text-slate-400 sm:text-sm">
+                              {t("tutorial.pickLegal")}
+                            </p>
+                          </div>
+                          <ActionButtons
+                            variant="deck"
+                            density="hud"
+                            playerSnapshot={step.startingGameState.p1}
+                            selected={selectedAction}
+                            onSelect={setSelectedAction}
+                            disabled={phase === "resolved"}
+                          />
+                          <button
+                            type="button"
+                            disabled={!selectedAction || phase === "resolved"}
+                            onClick={handleResolve}
+                            className="rounded-xl bg-amber-500 px-7 py-3 text-sm font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600"
+                          >
+                            {t("tutorial.resolveDrill")}
+                          </button>
+                          <p className="text-[0.68rem] leading-snug text-slate-500">
+                            {t("battle.deckHint")}
+                          </p>
+                        </div>
+                      ) : undefined
                     }
                   />
                 </div>
@@ -266,35 +300,6 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                 </div>
               </div>
             </section>
-
-            {showActionMatrix ? (
-              <section className="rounded-2xl border border-slate-800/90 bg-slate-950/55 p-5 shadow-2xl backdrop-blur-md md:p-7">
-                <div className="border-b border-slate-800 pb-4">
-                  <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-500">
-                    {t("tutorial.yourManeuver")}
-                  </h2>
-                  <p className="mt-2 text-sm text-slate-400">
-                    {t("tutorial.pickLegal")}
-                  </p>
-                </div>
-                <div className="mt-6 space-y-6">
-                  <ActionButtons
-                    playerSnapshot={step.startingGameState.p1}
-                    selected={selectedAction}
-                    onSelect={setSelectedAction}
-                    disabled={phase === "resolved"}
-                  />
-                  <button
-                    type="button"
-                    disabled={!selectedAction || phase === "resolved"}
-                    onClick={handleResolve}
-                    className="rounded-xl bg-amber-500 px-7 py-3 text-sm font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600"
-                  >
-                    {t("tutorial.resolveDrill")}
-                  </button>
-                </div>
-              </section>
-            ) : null}
 
             {phase === "resolved" && lastSuccess !== null ? (
               <TutorialResult

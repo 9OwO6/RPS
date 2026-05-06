@@ -301,7 +301,7 @@ export function BattleScreen({
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_0%,rgba(251,191,36,0.06),transparent_55%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-3 pb-28 pt-4 md:max-w-3xl lg:min-h-0 lg:gap-2 lg:overflow-hidden lg:px-5 lg:pb-2 lg:pt-2">
+      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-3 pb-20 pt-4 md:max-w-4xl xl:max-w-5xl lg:min-h-0 lg:gap-2 lg:overflow-hidden lg:px-5 lg:pb-2 lg:pt-2">
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3 lg:gap-2 lg:border-slate-800/60 lg:pb-2 lg:pt-0">
           <div className="min-w-0">
             <p className="text-[0.55rem] font-bold uppercase tracking-[0.35em] text-amber-600/90 lg:text-[0.5rem] lg:tracking-[0.32em]">
@@ -351,6 +351,13 @@ export function BattleScreen({
             subtitle={battleMode === "VS_AI" ? t("battle.subtitle.aiP2") : t("battle.subtitle.opponentP2")}
             snapshot={game.p2}
             isActiveTurn={activePlayer === "P2"}
+            selectedFocusAction={
+              battleMode === "LOCAL_2P" &&
+              activePlayer === "P2" &&
+              p2Pick !== null
+                ? p2Pick
+                : null
+            }
             layoutVariant="hero"
             arenaBand="opponent"
             resolveFeedback={
@@ -362,6 +369,57 @@ export function BattleScreen({
                     damageTaken: battleFeedback.p2Damage,
                   }
                 : null
+            }
+            heroControls={
+              battleMode === "LOCAL_2P" && activePlayer === "P2" ? (
+                <div className="space-y-3 lg:space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-[0.58rem] font-black uppercase tracking-[0.3em] text-slate-500 sm:text-[0.62rem] lg:text-[0.56rem]">
+                      {t("battle.modeDeck")}
+                    </h2>
+                    <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-amber-300/90 sm:text-[0.6rem]">
+                      {t("battle.live", { player: "P2" })}
+                    </span>
+                  </div>
+                  {game.p2.state === "STAGGERED" ? (
+                    <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm leading-snug text-red-100">
+                      {t("battle.staggeredP2")}
+                    </p>
+                  ) : (
+                    <ActionButtons
+                      variant="deck"
+                      density="hud"
+                      playerSnapshot={game.p2}
+                      selected={p2Pick}
+                      onSelect={setP2Pick}
+                      disabled={game.phase !== "P2_PICK"}
+                    />
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {game.phase === "P2_PICK" && (
+                      <button
+                        type="button"
+                        disabled={p2ConfirmDisabled}
+                        onClick={() => {
+                          if (!p2ConfirmDisabled) play("UI_CONFIRM");
+                          handleP2Confirm();
+                        }}
+                        className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
+                      >
+                        {t("battle.sealResolve")}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[0.68rem] leading-snug text-slate-500 lg:text-[0.62rem]">
+                    {t("battle.deckHint")}
+                  </p>
+                  {game.phase === "P2_PICK" ? (
+                    <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.65rem] leading-snug text-slate-500 lg:text-[0.6rem]">
+                      {t("battle.hiddenPick")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : undefined
             }
           />
         </div>
@@ -410,6 +468,21 @@ export function BattleScreen({
               </div>
             )}
           </div>
+
+          {game.phase === "ROUND_END" ? (
+            <div className="flex shrink-0 justify-center border-t border-slate-800/65 bg-slate-950/45 px-3 py-2.5 lg:py-2">
+              <button
+                type="button"
+                onClick={() => {
+                  play("UI_CONFIRM");
+                  handleNextRound();
+                }}
+                className="rounded-xl border border-amber-700/50 bg-amber-950/35 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/55 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
+              >
+                {t("battle.nextRound")}
+              </button>
+            </div>
+          ) : null}
         </section>
 
         {/* Local duelist (P1) */}
@@ -435,6 +508,9 @@ export function BattleScreen({
             subtitle={t("battle.subtitle.youP1")}
             snapshot={game.p1}
             isActiveTurn={activePlayer === "P1"}
+            selectedFocusAction={
+              activePlayer === "P1" && p1Pick !== null ? p1Pick : null
+            }
             layoutVariant="hero"
             arenaBand="local"
             resolveFeedback={
@@ -447,127 +523,64 @@ export function BattleScreen({
                   }
                 : null
             }
-          />
-        </div>
-
-        {/* Maneuver deck + seals */}
-        <section
-          aria-label="Maneuver selection"
-          className="shrink-0 rounded-2xl border border-slate-800/90 bg-slate-950/60 p-3 shadow-xl backdrop-blur-md md:p-5 lg:p-2.5 lg:shadow-lg"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 lg:pb-1.5">
-            <h2 className="text-[0.65rem] font-black uppercase tracking-[0.32em] text-slate-500 lg:text-[0.58rem]">
-              {t("battle.modeDeck")}
-            </h2>
-            {activePlayer ? (
-              <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-amber-300/90 lg:py-0 lg:text-[0.55rem]">
-                {t("battle.live", { player: activePlayer })}
-              </span>
-            ) : null}
-          </div>
-
-          <div className="mt-4 space-y-4 lg:mt-2 lg:space-y-2">
-            {activePlayer === "P1" && game.p1.state !== "STAGGERED" && (
-              <ActionButtons
-                variant="deck"
-                density="hud"
-                playerSnapshot={game.p1}
-                selected={p1Pick}
-                onSelect={setP1Pick}
-                disabled={game.phase !== "P1_PICK"}
-              />
-            )}
-
-            {activePlayer === "P1" && game.p1.state === "STAGGERED" && (
-              <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                {t("battle.staggeredP1")}
-              </p>
-            )}
-
-            {battleMode === "LOCAL_2P" &&
-              activePlayer === "P2" &&
-              game.p2.state !== "STAGGERED" && (
-              <ActionButtons
-                variant="deck"
-                density="hud"
-                playerSnapshot={game.p2}
-                selected={p2Pick}
-                onSelect={setP2Pick}
-                disabled={game.phase !== "P2_PICK"}
-              />
-            )}
-
-            {battleMode === "LOCAL_2P" &&
-              activePlayer === "P2" &&
-              game.p2.state === "STAGGERED" && (
-              <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                {t("battle.staggeredP2")}
-              </p>
-            )}
-
-            {activePlayer === null &&
-              game.phase !== "GAME_OVER" &&
-              game.phase !== "ROUND_END" && (
-                <p className="text-center text-sm text-slate-500">
+            heroControls={
+              activePlayer === "P1" ? (
+                <div className="space-y-3 lg:space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-[0.58rem] font-black uppercase tracking-[0.3em] text-slate-500 sm:text-[0.62rem] lg:text-[0.56rem]">
+                      {t("battle.modeDeck")}
+                    </h2>
+                    <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-amber-300/90 sm:text-[0.6rem]">
+                      {t("battle.live", { player: "P1" })}
+                    </span>
+                  </div>
+                  {game.p1.state === "STAGGERED" ? (
+                    <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm leading-snug text-red-100">
+                      {t("battle.staggeredP1")}
+                    </p>
+                  ) : (
+                    <ActionButtons
+                      variant="deck"
+                      density="hud"
+                      playerSnapshot={game.p1}
+                      selected={p1Pick}
+                      onSelect={setP1Pick}
+                      disabled={game.phase !== "P1_PICK"}
+                    />
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {game.phase === "P1_PICK" && (
+                      <button
+                        type="button"
+                        disabled={p1ConfirmDisabled}
+                        onClick={() => {
+                          if (!p1ConfirmDisabled) play("UI_CONFIRM");
+                          handleP1Confirm();
+                        }}
+                        className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
+                      >
+                        {battleMode === "VS_AI"
+                          ? t("battle.confirmVsAi")
+                          : t("battle.sealP1")}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[0.68rem] leading-snug text-slate-500 lg:text-[0.62rem]">
+                    {t("battle.deckHint")}
+                  </p>
+                  {battleMode === "VS_AI" ? (
+                    <p className="rounded-lg border border-slate-800/80 bg-black/25 px-2 py-1.5 text-[0.65rem] leading-snug text-slate-500 lg:text-[0.6rem]">
+                      {t("battle.aiPublicOnly")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : battleMode === "LOCAL_2P" && game.phase === "PASS_TO_P2" ? (
+                <p className="text-center text-sm leading-snug text-slate-500 lg:text-[0.72rem]">
                   {t("battle.waitingPass")}
                 </p>
-              )}
-
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start lg:gap-1.5">
-              {game.phase === "P1_PICK" && (
-                <button
-                  type="button"
-                  disabled={p1ConfirmDisabled}
-                  onClick={() => {
-                    if (!p1ConfirmDisabled) play("UI_CONFIRM");
-                    handleP1Confirm();
-                  }}
-                  className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
-                >
-                  {battleMode === "VS_AI"
-                    ? t("battle.confirmVsAi")
-                    : t("battle.sealP1")}
-                </button>
-              )}
-              {battleMode === "LOCAL_2P" && game.phase === "P2_PICK" && (
-                <button
-                  type="button"
-                  disabled={p2ConfirmDisabled}
-                  onClick={() => {
-                    if (!p2ConfirmDisabled) play("UI_CONFIRM");
-                    handleP2Confirm();
-                  }}
-                  className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
-                >
-                  {t("battle.sealResolve")}
-                </button>
-              )}
-              {game.phase === "ROUND_END" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    play("UI_CONFIRM");
-                    handleNextRound();
-                  }}
-                  className="rounded-xl border border-amber-700/50 bg-amber-950/30 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/50 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
-                >
-                  {t("battle.nextRound")}
-                </button>
-              )}
-            </div>
-
-            {battleMode === "LOCAL_2P" && game.phase === "P2_PICK" && (
-              <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.7rem] text-slate-500">
-                {t("battle.hiddenPick")}
-              </p>
-            )}
-            {battleMode === "VS_AI" ? (
-              <p className="rounded-lg border border-slate-800/80 bg-black/25 px-2 py-1.5 text-[0.68rem] text-slate-500">
-                {t("battle.aiPublicOnly")}
-              </p>
-            ) : null}
-          </div>
-        </section>
+              ) : undefined
+            }
+          />
         </div>
 
         <div className="mt-2 flex flex-col gap-2 lg:mt-1 lg:shrink-0 lg:flex-row lg:gap-2 lg:border-t lg:border-slate-900/35 lg:pt-1">
@@ -585,6 +598,7 @@ export function BattleScreen({
               <RulesReminder />
             </div>
           </details>
+        </div>
         </div>
       </div>
 
