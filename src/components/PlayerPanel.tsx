@@ -146,7 +146,9 @@ export function PlayerPanel({
   ].join(" ");
 
   const heroPortraitShell = [
-    "hero-portrait-shell relative shrink-0 overflow-hidden rounded-2xl border bg-gradient-to-b from-slate-900/80 to-black/50 ring-1",
+    "hero-portrait-shell relative shrink-0 rounded-2xl border bg-gradient-to-b from-slate-900/80 to-black/50 ring-1",
+    // Allow the selected-move badge to sit slightly past the frame without clipping the bust.
+    selectedFocusAction ? "overflow-visible" : "overflow-hidden",
     isActiveTurn
       ? "border-amber-500/55 ring-amber-400/40"
       : "border-slate-600/60 ring-white/10",
@@ -207,24 +209,26 @@ export function PlayerPanel({
           }
           aria-hidden
         >
-          <Image
-            src={portraitSrc}
-            alt=""
-            fill
-            sizes={
-              hero
-                ? "(max-width: 768px) 50vw, (max-width: 1280px) 30vw, 320px"
-                : compact
-                  ? "(max-width: 640px) 48px, 56px"
-                  : "(max-width: 640px) 56px, 76px"
-            }
-            className={
-              hero
-                ? "object-cover object-[center_12%] saturate-[1.05]"
-                : "object-cover object-top"
-            }
-            priority={hero && snapshot.id === "P1"}
-          />
+          <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
+            <Image
+              src={portraitSrc}
+              alt=""
+              fill
+              sizes={
+                hero
+                  ? "(max-width: 768px) 50vw, (max-width: 1280px) 30vw, 320px"
+                  : compact
+                    ? "(max-width: 640px) 48px, 56px"
+                    : "(max-width: 640px) 56px, 76px"
+              }
+              className={
+                hero
+                  ? "object-cover object-[center_12%] saturate-[1.05]"
+                  : "object-cover object-top"
+              }
+              priority={hero && snapshot.id === "P1"}
+            />
+          </span>
           {hero ? (
             <span
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-slate-950/25"

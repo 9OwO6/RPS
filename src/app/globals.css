@@ -710,6 +710,41 @@ body {
   }
 }
 
+@keyframes maneuver-cine-enter-portrait {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.72);
+    filter: blur(1px) brightness(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) brightness(1);
+  }
+}
+
+@keyframes maneuver-cine-breathe-portrait {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(-0.5px) scale(1.018);
+    filter: brightness(1.03);
+  }
+}
+
+@keyframes maneuver-glow-pulse-portrait {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
 @keyframes maneuver-ring-burst {
   0% {
     opacity: 0;
@@ -758,6 +793,20 @@ body {
   }
 }
 
+@keyframes maneuver-slash-pass-portrait {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px) translateY(6px) rotate(-18deg);
+  }
+  35% {
+    opacity: 0.28;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(16px) translateY(-6px) rotate(-18deg);
+  }
+}
+
 .maneuver-cine-root {
   position: relative;
   width: min(92vw, 13.75rem);
@@ -768,22 +817,79 @@ body {
 }
 
 .maneuver-cine-root-portrait {
-  width: min(34vw, 6.75rem);
-  height: min(34vw, 6.75rem);
+  width: min(26vw, 4.35rem);
+  height: min(26vw, 4.35rem);
+  animation: maneuver-cine-enter-portrait 260ms ease-out both;
+}
+
+.maneuver-cine-root-portrait-anchor-left {
+  transform-origin: 18% 92%;
+}
+
+.maneuver-cine-root-portrait-anchor-right {
+  transform-origin: 82% 92%;
 }
 
 @media (min-width: 640px) {
   .maneuver-cine-root-portrait {
-    width: 6.3rem;
-    height: 6.3rem;
+    width: 4.55rem;
+    height: 4.55rem;
   }
 }
 
 @media (min-width: 1024px) {
   .maneuver-cine-root-portrait {
-    width: 6.8rem;
-    height: 6.8rem;
+    width: 4.85rem;
+    height: 4.85rem;
   }
+}
+
+/* Portrait badge: softer FX so the bust stays the hero. */
+.maneuver-cine-root-portrait .maneuver-cine-backdrop {
+  opacity: 0.52;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-aura {
+  inset: -8%;
+  filter: blur(6px);
+  opacity: 0.34;
+  animation: maneuver-glow-pulse-portrait 2.4s ease-in-out infinite;
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-ring {
+  inset: -2%;
+  opacity: 0.48;
+  border-color: rgba(226, 232, 240, 0.12);
+  box-shadow: 0 0 8px rgba(226, 232, 240, 0.05);
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-ring-burst {
+  inset: -6%;
+  border-width: 1px;
+  opacity: 0;
+  box-shadow: 0 0 10px rgba(226, 232, 240, 0.06);
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-ring-rotate {
+  inset: -8%;
+  opacity: 0.22;
+  animation-duration: 9.5s;
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-flash {
+  inset: 18%;
+  opacity: 0;
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-artWrap {
+  inset: 14%;
+  animation: maneuver-cine-breathe-portrait 2.6s ease-in-out infinite;
+}
+
+.maneuver-cine-root-portrait .maneuver-cine-artImg {
+  opacity: 0.9;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
 }
 
 @media (min-width: 640px) {
@@ -964,6 +1070,48 @@ body {
   filter: blur(1px);
   opacity: 0.65;
   animation: maneuver-ring-rotate 2.4s linear infinite;
+}
+
+/* Portrait badge: lighter tone reads after global portrait soft-pass (higher specificity). */
+.maneuver-cine-root-portrait .maneuver-cine-accent {
+  opacity: 0.4;
+}
+
+.maneuver-cine-scissors.maneuver-cine-root-portrait .maneuver-cine-aura {
+  background: radial-gradient(circle, rgba(248, 250, 252, 0.22), transparent 68%);
+}
+
+.maneuver-cine-scissors.maneuver-cine-root-portrait .maneuver-cine-accent-a,
+.maneuver-cine-scissors.maneuver-cine-root-portrait .maneuver-cine-accent-b {
+  animation-name: maneuver-slash-pass-portrait;
+  animation-duration: 400ms;
+  animation-timing-function: ease-out;
+}
+
+.maneuver-cine-rock.maneuver-cine-root-portrait .maneuver-cine-aura {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.26), transparent 68%);
+}
+
+.maneuver-cine-rock.maneuver-cine-root-portrait .maneuver-cine-accent-a {
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.11);
+}
+
+.maneuver-cine-paper.maneuver-cine-root-portrait .maneuver-cine-aura {
+  background: radial-gradient(circle, rgba(248, 113, 113, 0.22), transparent 68%);
+}
+
+.maneuver-cine-paper.maneuver-cine-root-portrait .maneuver-cine-accent-a {
+  opacity: 0.3;
+  animation-duration: 2.85s;
+}
+
+.maneuver-cine-hold.maneuver-cine-root-portrait .maneuver-cine-aura {
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.2), transparent 68%);
+}
+
+.maneuver-cine-hold.maneuver-cine-root-portrait .maneuver-cine-accent-a {
+  opacity: 0.26;
+  animation-duration: 3.2s;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -26,6 +26,7 @@ export function SelectedManeuverCinematic({
   iconSrc,
   anchorLeftPx,
   variant = "deck",
+  portraitSide = "left",
 }: {
   action: InputAction;
   iconSrc: string;
@@ -40,9 +41,20 @@ export function SelectedManeuverCinematic({
     setPulseKey((v) => v + 1);
   }, [action]);
 
+  const portraitAnchorClass =
+    portraitSide === "right"
+      ? "maneuver-cine-root-portrait-anchor-right"
+      : "maneuver-cine-root-portrait-anchor-left";
+
   const wrapperClass =
     variant === "portrait"
-      ? "pointer-events-none absolute bottom-[-0.2rem] left-1/2 z-[14] -translate-x-1/2 overflow-visible"
+      ? [
+          "pointer-events-none absolute z-[12] overflow-visible",
+          // Corner badge: overlaps frame chrome near bottom edge, stays away from face (upper portrait).
+          portraitSide === "right"
+            ? "bottom-[2.5%] right-[2.5%] sm:bottom-[3%] sm:right-[3%]"
+            : "bottom-[2.5%] left-[2.5%] sm:bottom-[3%] sm:left-[3%]",
+        ].join(" ")
       : "pointer-events-none absolute top-1 z-[30] overflow-visible transition-[left] duration-220 ease-out";
 
   const wrapperStyle =
@@ -57,7 +69,9 @@ export function SelectedManeuverCinematic({
     <div className={wrapperClass} style={wrapperStyle}>
       <div
         className={`maneuver-cine-root ${tone} ${
-          variant === "portrait" ? "maneuver-cine-root-portrait" : ""
+          variant === "portrait"
+            ? `maneuver-cine-root-portrait ${portraitAnchorClass}`
+            : ""
         }`}
       >
         <div className="maneuver-cine-backdrop" aria-hidden />
@@ -78,7 +92,11 @@ export function SelectedManeuverCinematic({
             src={iconSrc}
             alt=""
             fill
-            sizes="(max-width: 640px) 140px, (max-width: 1024px) 170px, 210px"
+            sizes={
+              variant === "portrait"
+                ? "(max-width: 640px) 72px, (max-width: 1024px) 80px, 88px"
+                : "(max-width: 640px) 140px, (max-width: 1024px) 170px, 210px"
+            }
             className="maneuver-cine-artImg"
           />
         </div>

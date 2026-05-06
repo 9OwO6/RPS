@@ -90,9 +90,9 @@ export function ActionButtons({
           selectedIndex < 0
             ? 0
             : idx < selectedIndex
-              ? -16
+              ? -8
               : idx > selectedIndex
-                ? 16
+                ? 8
                 : 0;
         const inactiveReasonEn = playable || disabled
           ? null
@@ -129,8 +129,8 @@ export function ActionButtons({
               "group relative flex flex-col rounded-xl border text-left shadow-md outline-none ring-offset-2 ring-offset-slate-950/90 transition-[box-shadow,border-color,background-color,transform,opacity,filter] duration-200 ease-out will-change-transform",
               deckSizing,
               hudDeck || embedDeck ? "lg:justify-center xl:justify-center" : "",
-              dimSiblingPick ? "opacity-[0.54] saturate-[0.62] grayscale-[0.16]" : "",
-              dimSiblingPick ? "scale-[0.92]" : "",
+              dimSiblingPick ? "opacity-[0.8] saturate-[0.82] grayscale-[0.06]" : "",
+              dimSiblingPick ? "scale-[0.96]" : "",
               "focus-visible:ring-2 focus-visible:ring-amber-400/70",
               isSelected
                 ? inputActionCardSelectedClasses(view.displayAction)
@@ -145,7 +145,7 @@ export function ActionButtons({
             style={
               dimSiblingPick
                 ? ({
-                    transform: `translateX(${retreatOffset}px) scale(0.92)`,
+                    transform: `translateX(${retreatOffset}px) scale(0.96)`,
                   } as CSSProperties)
                 : undefined
             }
