@@ -1,4 +1,4 @@
-import type { InputAction, PlayerState } from "./types";
+import type { InputAction, PlayerSnapshot, PlayerState } from "./types";
 
 const ALL_INPUTS: InputAction[] = ["SCISSORS", "ROCK", "PAPER", "HOLD"];
 
@@ -19,9 +19,19 @@ export function getAvailableInputActions(state: PlayerState): InputAction[] {
   }
 }
 
+export function getAvailableInputActionsForPlayer(
+  snapshot: Pick<PlayerSnapshot, "state" | "paperStreak">,
+): InputAction[] {
+  const base = getAvailableInputActions(snapshot.state);
+  if (snapshot.paperStreak >= 2) {
+    return base.filter((action) => action !== "PAPER");
+  }
+  return base;
+}
+
 export function isInputAllowed(
-  state: PlayerState,
+  snapshot: Pick<PlayerSnapshot, "state" | "paperStreak">,
   input: InputAction,
 ): boolean {
-  return getAvailableInputActions(state).includes(input);
+  return getAvailableInputActionsForPlayer(snapshot).includes(input);
 }

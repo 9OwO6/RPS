@@ -103,19 +103,19 @@ describe("resolveRound rule engine", () => {
     expect(next.p2.hp).toBe(INITIAL_HP - 5);
   });
 
-  it("13. Third consecutive Paper becomes PAPER_EXHAUSTED", () => {
+  it("13. Third consecutive Paper is rejected as INVALID", () => {
     const prev = withPlayers({ state: "NORMAL" }, { paperStreak: 2, state: "NORMAL" });
     const next = resolveRound(prev, "ROCK", "PAPER");
-    expect(next.lastEffectiveActions?.p2).toBe("PAPER_EXHAUSTED");
+    expect(next.lastEffectiveActions?.p2).toBe("INVALID");
   });
 
-  it("14. PAPER_EXHAUSTED cannot counter Rock release", () => {
+  it("14. Locked Paper cannot counter Rock release", () => {
     const prev = withPlayers(
       { state: "CHARGING_LV1" },
       { paperStreak: 2, state: "CHARGING_LV1" },
     );
     const next = resolveRound(prev, "ROCK", "PAPER");
-    expect(next.lastEffectiveActions?.p2).toBe("PAPER_EXHAUSTED");
+    expect(next.lastEffectiveActions?.p2).toBe("INVALID");
     expect(next.p2.hp).toBe(INITIAL_HP - ROCK_LV1_DAMAGE);
     expect(next.p2.state).not.toBe("STAGGERED");
   });
@@ -264,12 +264,12 @@ describe("resolveRound rule engine", () => {
     expect(next.p1.scissorsStreak).toBe(0);
   });
 
-  it("PAPER_EXHAUSTED loses to Scissors for 5 damage and is staggered", () => {
+  it("locked Paper input is INVALID and does not trigger paper penalty path", () => {
     const prev = withPlayers({ state: "NORMAL" }, { paperStreak: 2, state: "NORMAL" });
     const next = resolveRound(prev, "SCISSORS", "PAPER");
-    expect(next.lastEffectiveActions?.p2).toBe("PAPER_EXHAUSTED");
-    expect(next.p2.hp).toBe(INITIAL_HP - 5);
-    expect(next.p2.state).toBe("STAGGERED");
+    expect(next.lastEffectiveActions?.p2).toBe("INVALID");
+    expect(next.p2.hp).toBe(INITIAL_HP - 3);
+    expect(next.p2.state).toBe("NORMAL");
   });
 
   it("leaves a GAME_OVER snapshot unchanged while returning a detached copy", () => {

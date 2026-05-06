@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { SoundProvider } from "@/audio/SoundContext";
+import { I18nProvider } from "@/i18n/I18nProvider";
 import type { AiDifficulty } from "@/game/ai";
 import type { AppMode } from "@/lib/appMode";
 import { BattleScreen } from "@/components/BattleScreen";
@@ -66,5 +67,9 @@ export default function Home() {
     }
   }
 
-  return <SoundProvider>{content}</SoundProvider>;
+  return (
+    <I18nProvider>
+      <SoundProvider>{content}</SoundProvider>
+    </I18nProvider>
+  );
 }

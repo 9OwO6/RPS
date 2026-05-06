@@ -5,14 +5,14 @@ import { useEffect, useMemo } from "react";
 
 import { combatAnimationToSoundKey } from "@/audio/combatSoundMap";
 import { useSound } from "@/audio/SoundContext";
+import { localizedCombatCaption, localizedEffectiveTileLabel } from "@/i18n/gameTerms";
+import { useI18n } from "@/i18n/useI18n";
 import { ASSETS } from "@/lib/assetPaths";
 import type { EffectiveAction, GameState } from "@/game/types";
 import {
   type CombatAnimationType,
   getActionIconPathFromEffectiveAction,
   getCombatAnimationType,
-  getCombatCaption,
-  getEffectiveActionLabel,
 } from "@/presentation/combatAnimation";
 import {
   getEffectiveTileLunge,
@@ -68,8 +68,9 @@ function EffectiveTile({
   animType: CombatAnimationType;
   nextState: GameState;
 }) {
+  const { t } = useI18n();
   const path = getActionIconPathFromEffectiveAction(action);
-  const label = getEffectiveActionLabel(action);
+  const label = localizedEffectiveTileLabel(t, action);
   const slide = animSide === "left" ? "combat-in-left" : "combat-in-right";
   const lungeClass = getEffectiveTileLungeClass(
     side,
@@ -99,7 +100,9 @@ function EffectiveTile({
         </div>
       ) : (
         <span className="rounded-md border border-slate-600/70 bg-slate-950/70 px-2 py-1 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">
-          {action === "STUNNED_SKIP" ? "Skip" : "Invalid"}
+          {action === "STUNNED_SKIP"
+            ? t("effective.tile.skip")
+            : t("effective.tile.invalid")}
         </span>
       )}
       <span className="max-w-[10rem] text-center text-[0.7rem] leading-snug text-slate-400">
@@ -110,6 +113,7 @@ function EffectiveTile({
 }
 
 function ClashCenter({ type }: { type: CombatAnimationType }) {
+  const { t } = useI18n();
   const motion = centerMotionClass(type);
   const rock = ASSETS.actions.ROCK;
   const paper = ASSETS.actions.PAPER;
@@ -121,12 +125,14 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
         className={`flex min-h-[5.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-black/40 px-4 py-3 ${motion}`}
       >
         <span className="text-[0.65rem] font-black uppercase tracking-[0.3em] text-slate-400">
-          {type === "INVALID" ? "Broken form" : "Yielded beat"}
+          {type === "INVALID"
+            ? t("clash.brokenForm")
+            : t("clash.yieldedBeat")}
         </span>
         <span className="text-center text-xs text-slate-500">
           {type === "INVALID"
-            ? "Resolve reads the ledger for what failed."
-            : "Staggered fighter could not commit a maneuver."}
+            ? t("clash.invalidHint")
+            : t("clash.staggerHint")}
         </span>
       </div>
     );
@@ -273,7 +279,7 @@ function ClashCenter({ type }: { type: CombatAnimationType }) {
           />
         </div>
         <span className="absolute bottom-1 rounded border border-slate-700/60 bg-slate-950/90 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">
-          chip
+          {t("clash.chipBadge")}
         </span>
       </div>
     );
@@ -336,12 +342,16 @@ export function CombatReveal({
   replayKey,
 }: CombatRevealProps) {
   const { play } = useSound();
+  const { t } = useI18n();
   const le = nextState.lastEffectiveActions;
   const animType = useMemo(
     () => getCombatAnimationType(prevState, nextState),
     [prevState, nextState],
   );
-  const caption = useMemo(() => getCombatCaption(animType), [animType]);
+  const caption = useMemo(
+    () => localizedCombatCaption(t, animType),
+    [animType, t],
+  );
 
   useEffect(() => {
     const key = combatAnimationToSoundKey(animType);
@@ -353,15 +363,17 @@ export function CombatReveal({
   return (
     <section
       id={`combat-reveal-${replayKey}`}
-      aria-label="Combat reveal"
+      aria-label={t("combatReveal.aria")}
       className="rounded-2xl border border-amber-900/40 bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-black/40 p-4 shadow-[0_0_40px_-12px_rgba(245,158,11,0.15)] backdrop-blur-md sm:p-5 lg:p-2.5 lg:shadow-md"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-800/80 pb-2.5 lg:pb-1.5">
         <h2 className="text-xs font-bold uppercase tracking-[0.28em] text-amber-500/95 sm:text-sm lg:text-[0.65rem]">
-          Clash tableau
+          {t("combatReveal.title")}
         </h2>
         <span className="text-[0.65rem] text-slate-500 lg:text-[0.6rem]">
-          Round {nextState.roundNumber - 1} · effective maneuvers
+          {t("combatReveal.roundEffective", {
+            round: nextState.roundNumber - 1,
+          })}
         </span>
       </div>
 

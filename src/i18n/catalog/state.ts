@@ -1,0 +1,36 @@
+import type { Locale } from "@/i18n/locales";
+
+export const stateLabels: Record<Locale, Record<string, string>> = {
+  en: {
+    "state.NORMAL.short": "NORMAL",
+    "state.CHARGING_LV1.short": "CHARGING_LV1",
+    "state.CHARGING_LV2.short": "CHARGING_LV2",
+    "state.STAGGERED.short": "STAGGERED",
+    "state.NORMAL.long": "Normal — ready stance",
+    "state.CHARGING_LV1.long": "Rock charge Lv1",
+    "state.CHARGING_LV2.long": "Rock charge Lv2",
+    "state.STAGGERED.long": "Staggered",
+    "state.arrow.unchanged": "{state} (unchanged)",
+    "state.arrow.transition": "{before} → {after}",
+    "invalid.token.NORMAL": "NORMAL",
+    "invalid.token.CHARGING_LV1": "CHARGING_LV1",
+    "invalid.token.CHARGING_LV2": "CHARGING_LV2",
+    "invalid.token.STAGGERED": "STAGGERED",
+  },
+  zh: {
+    "state.NORMAL.short": "普通状态",
+    "state.CHARGING_LV1.short": "蓄力一段",
+    "state.CHARGING_LV2.short": "蓄力二段",
+    "state.STAGGERED.short": "僵直",
+    "state.NORMAL.long": "普通状态 · 备战姿态",
+    "state.CHARGING_LV1.long": "石头蓄力一段",
+    "state.CHARGING_LV2.long": "石头蓄力二段",
+    "state.STAGGERED.long": "僵直",
+    "state.arrow.unchanged": "{state}（不变）",
+    "state.arrow.transition": "{before} → {after}",
+    "invalid.token.NORMAL": "普通状态",
+    "invalid.token.CHARGING_LV1": "蓄力一段",
+    "invalid.token.CHARGING_LV2": "蓄力二段",
+    "invalid.token.STAGGERED": "僵直",
+  },
+};

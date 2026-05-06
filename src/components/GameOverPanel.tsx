@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/useI18n";
 import type { GameState } from "@/game/types";
 
 interface GameOverPanelProps {
@@ -9,43 +10,28 @@ interface GameOverPanelProps {
   onBackToStart?: () => void;
 }
 
-function outcomeLabel(w: GameOverPanelProps["winner"]): string {
-  switch (w) {
-    case "P1":
-      return "Player 1 claims the duel.";
-    case "P2":
-      return "Player 2 claims the duel.";
-    case "DRAW":
-      return "Stalemate — neither stands.";
-    default: {
-      const _x: never = w;
-      return _x;
-    }
-  }
-}
-
-function outcomeHeadline(w: GameOverPanelProps["winner"]): string {
-  switch (w) {
-    case "P1":
-      return "Victory · P1";
-    case "P2":
-      return "Victory · P2";
-    case "DRAW":
-      return "Draw";
-    default: {
-      const _x: never = w;
-      return _x;
-    }
-  }
-}
-
 export function GameOverPanel({
   open,
   winner,
   onRestart,
   onBackToStart,
 }: GameOverPanelProps) {
+  const { t } = useI18n();
+
   if (!open) return null;
+
+  const headlineKey =
+    winner === "P1"
+      ? "gameOver.headline.P1"
+      : winner === "P2"
+        ? "gameOver.headline.P2"
+        : "gameOver.headline.DRAW";
+  const bodyKey =
+    winner === "P1"
+      ? "gameOver.body.P1"
+      : winner === "P2"
+        ? "gameOver.body.P2"
+        : "gameOver.body.DRAW";
 
   return (
     <div
@@ -56,23 +42,22 @@ export function GameOverPanel({
     >
       <div className="game-over-enter game-over-card-glow w-full max-w-lg rounded-2xl border border-amber-900/40 bg-gradient-to-b from-slate-950 via-slate-900 to-black p-10 text-center md:p-14">
         <p className="text-[0.7rem] font-bold uppercase tracking-[0.55em] text-slate-500">
-          Duel resolved
+          {t("gameOver.tagline")}
         </p>
         <h2 id="game-over-title" className="mt-3 text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">
-          Official result
+          {t("gameOver.official")}
         </h2>
 
         <p className="mt-8 bg-gradient-to-r from-white via-amber-100 to-amber-400 bg-clip-text text-4xl font-black leading-none tracking-tight text-transparent md:text-5xl">
-          {outcomeHeadline(winner)}
+          {t(headlineKey)}
         </p>
 
         <p className="mt-6 text-lg font-medium leading-relaxed text-slate-200">
-          {outcomeLabel(winner)}
+          {t(bodyKey)}
         </p>
 
         <p className="mt-4 text-sm text-slate-500">
-          Restart returns both fighters to full HP and opens a fresh round-one
-          pick for Player 1.
+          {t("gameOver.restartHint")}
         </p>
 
         <div className="mt-12 grid gap-2 sm:grid-cols-2">
@@ -81,7 +66,7 @@ export function GameOverPanel({
             className="w-full rounded-xl border-2 border-amber-900/70 bg-transparent px-4 py-3.5 text-sm font-black uppercase tracking-[0.3em] text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/40 hover:text-white"
             onClick={onRestart}
           >
-            Restart duel
+            {t("gameOver.restart")}
           </button>
           {onBackToStart ? (
             <button
@@ -89,7 +74,7 @@ export function GameOverPanel({
               className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3.5 text-sm font-black uppercase tracking-[0.2em] text-slate-200 transition hover:border-amber-700/50 hover:text-amber-100"
               onClick={onBackToStart}
             >
-              Back to start
+              {t("common.backToStartShort")}
             </button>
           ) : null}
         </div>

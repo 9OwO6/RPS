@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh-Hans" suppressHydrationWarning>
       <body className="min-h-screen">{children}</body>
     </html>
   );

@@ -1,0 +1,173 @@
+import type { Locale } from "@/i18n/locales";
+
+export const online: Record<Locale, Record<string, string>> = {
+  en: {
+    "online.bootLoading": "Connecting to online server…",
+    "online.duelTagline": "Online duel",
+    "online.lobbyTitle": "Room Lobby",
+    "online.lobbySubtitle":
+      "Create or join a room. When both duelists are present, enter the arena.",
+    "online.reconnectSection": "Reconnect",
+    "online.lastRoom":
+      "Last room: {code} · You were {role}",
+    "online.rejoinLastRoom": "Rejoin Last Room",
+    "online.serverSection": "Server",
+    "online.statusLabel": "Status:",
+    "online.conn.connecting": "Connecting...",
+    "online.conn.connected": "Connected",
+    "online.conn.disconnected": "Disconnected",
+    "online.conn.error": "Connection error",
+    "online.createRoom": "Create Room",
+    "online.joinPlaceholder": "Enter room code",
+    "online.joinRoom": "Join",
+    "online.roomCodeLabel": "Room Code:",
+    "online.roleLabel": "Role:",
+    "online.role.unassigned": "Unassigned",
+    "online.role.youAre": "You are {role}",
+    "online.roomStatusLabel": "Room Status:",
+    "online.opponentLabel": "Opponent:",
+    "online.waitingP2": "Waiting for player 2...",
+    "online.bothJoined": "Both players joined.",
+    "online.leaveRoom": "Leave Room",
+    "online.enterDuel": "Enter Online Duel",
+    "online.backToOnlineLobby": "Back to Online Lobby",
+    "online.notice.roomCreated": "Room created. Waiting for opponent to join.",
+    "online.notice.joined": "Joined room successfully.",
+    "online.notice.rejoinedSeat": "Reconnected to your seat.",
+    "online.notice.playerLeft": "Player {id} left the room.",
+    "online.notice.playerDisconnected":
+      "Player {id} disconnected or left the room.",
+    "online.battle.header": "Online duel · Room {code}",
+    "online.battle.phaseLabel": "Online · {phase}",
+    "online.battle.lockWhenReady": "Lock when ready",
+    "online.battle.lockIn": "Lock in maneuver",
+    "online.battle.staggerAuto":
+      "Staggered — your lane locks automatically for this round.",
+    "online.battle.readyNext": "Ready for Next Round",
+    "online.battle.youReady": "You are ready.",
+    "online.battle.opponentReady": "Opponent is ready.",
+    "online.battle.countdown": "Next round starts in {n}…",
+    "online.battle.countdownSoon": "Next round starting soon…",
+    "online.battle.hiddenNote":
+      "Online resolves on the server — picks stay hidden until the official clash result arrives.",
+    "online.battle.youStatus": "You:",
+    "online.battle.opponentStatus": "Opponent:",
+    "online.battle.selecting": "Selecting",
+    "online.battle.lockedIn": "Locked in",
+    "online.battle.notLocked": "Not locked",
+    "online.hud.disconnected":
+      "Opponent disconnected — waiting for reconnect…",
+    "online.hud.matchSettled": "Match settled.",
+    "online.hud.roundResolvedReview":
+      "Round resolved — review the tableau, then signal when you are ready.",
+    "online.hud.staggerServer":
+      "Staggered — server auto-resolves your lane.",
+    "online.hud.bothLocked": "Both duelists locked. Resolving…",
+    "online.hud.youLocked": "You locked in. Waiting for opponent…",
+    "online.hud.pickLock": "Choose a legal maneuver, then lock in.",
+    "online.error.ROOM_NOT_FOUND":
+      "Room not found. Please check the room code.",
+    "online.error.ROOM_FULL":
+      "Room already has two players.",
+    "online.error.SEAT_RESERVED":
+      "This seat is reserved for a disconnected player. Please use Rejoin.",
+    "online.error.REJOIN_FAILED":
+      "Rejoin failed. The room may have expired.",
+    "online.error.INVALID_ACTION": "That action is not allowed right now.",
+    "online.error.ALREADY_LOCKED": "You already locked this round.",
+    "online.error.PAPER_LOCKED":
+      "Paper is locked after two consecutive uses.",
+    "online.error.OPPONENT_DISCONNECTED":
+      "Opponent disconnected. Waiting for reconnect…",
+    "online.error.CONNECT_ERROR":
+      "Could not connect to online room server.",
+    "online.error.VALIDATION_ROOM_CODE": "Enter a room code first.",
+    "online.error.VALIDATION_NO_SESSION": "No saved online session.",
+    "online.error.CLIENT_VALIDATION": "",
+    "online.validation.roomCode": "Enter a room code first.",
+    "online.validation.noSession": "No saved online session.",
+  },
+  zh: {
+    "online.bootLoading": "正在连接在线服务器……",
+    "online.duelTagline": "在线对战",
+    "online.lobbyTitle": "房间大厅",
+    "online.lobbySubtitle":
+      "创建或加入房间。双方就位后即可进入竞技场。",
+    "online.reconnectSection": "重连",
+    "online.lastRoom": "上次房间：{code} · 你是 {role}",
+    "online.rejoinLastRoom": "重连上次房间",
+    "online.serverSection": "服务器",
+    "online.statusLabel": "状态：",
+    "online.conn.connecting": "连接中……",
+    "online.conn.connected": "已连接",
+    "online.conn.disconnected": "已断开",
+    "online.conn.error": "连接异常",
+    "online.createRoom": "创建房间",
+    "online.joinPlaceholder": "输入房间码",
+    "online.joinRoom": "加入",
+    "online.roomCodeLabel": "房间码：",
+    "online.roleLabel": "身份：",
+    "online.role.unassigned": "未分配",
+    "online.role.youAre": "你是 {role}",
+    "online.roomStatusLabel": "房间状态：",
+    "online.opponentLabel": "对手：",
+    "online.waitingP2": "等待第二位玩家……",
+    "online.bothJoined": "双方已就位。",
+    "online.leaveRoom": "离开房间",
+    "online.enterDuel": "进入在线对战",
+    "online.backToOnlineLobby": "返回在线大厅",
+    "online.notice.roomCreated": "房间已创建，等待对手加入。",
+    "online.notice.joined": "加入房间成功。",
+    "online.notice.rejoinedSeat": "已回到你的座位。",
+    "online.notice.playerLeft": "玩家 {id} 离开了房间。",
+    "online.notice.playerDisconnected": "玩家 {id} 断开连接或离开房间。",
+    "online.battle.header": "在线对战 · 房间 {code}",
+    "online.battle.phaseLabel": "在线 · {phase}",
+    "online.battle.lockWhenReady": "准备好再锁定",
+    "online.battle.lockIn": "锁定出招",
+    "online.battle.staggerAuto":
+      "僵直——本回合你的轨道将由服务器自动锁定。",
+    "online.battle.readyNext": "下一回合",
+    "online.battle.youReady": "你已就绪。",
+    "online.battle.opponentReady": "对手已就绪。",
+    "online.battle.countdown": "{n} 秒后开始下一回合……",
+    "online.battle.countdownSoon": "下一回合即将开始……",
+    "online.battle.hiddenNote":
+      "在线模式由服务器结算——在官方结果到达前，出牌保持隐藏。",
+    "online.battle.youStatus": "你：",
+    "online.battle.opponentStatus": "对手：",
+    "online.battle.selecting": "选择中",
+    "online.battle.lockedIn": "已锁定",
+    "online.battle.notLocked": "未锁定",
+    "online.hud.disconnected":
+      "对手已断开连接，等待重连……",
+    "online.hud.matchSettled": "对战结束。",
+    "online.hud.roundResolvedReview":
+      "回合已结算——请先看清战局，再示意准备就绪。",
+    "online.hud.staggerServer":
+      "僵直——由服务器自动结算你的轨道。",
+    "online.hud.bothLocked":
+      "双方出招已锁定，服务器正在结算。",
+    "online.hud.youLocked": "你已锁定，等待对手……",
+    "online.hud.pickLock": "选择合法招式后锁定出招。",
+    "online.error.ROOM_NOT_FOUND":
+      "房间不存在，请检查房间码。",
+    "online.error.ROOM_FULL": "房间已满。",
+    "online.error.SEAT_RESERVED":
+      "该座位已保留给断线玩家，请使用重连按钮。",
+    "online.error.REJOIN_FAILED":
+      "重连失败，房间可能已过期。",
+    "online.error.INVALID_ACTION": "当前不能使用该招式。",
+    "online.error.ALREADY_LOCKED": "本回合你已经锁定。",
+    "online.error.PAPER_LOCKED": "连续两次出布后，当前不能继续出布。",
+    "online.error.OPPONENT_DISCONNECTED":
+      "对手已断开连接，等待重连……",
+    "online.error.CONNECT_ERROR":
+      "无法连接到在线房间服务器。",
+    "online.error.VALIDATION_ROOM_CODE": "请先输入房间码。",
+    "online.error.VALIDATION_NO_SESSION": "没有保存的在线会话。",
+    "online.error.CLIENT_VALIDATION": "",
+    "online.validation.roomCode": "请先输入房间码。",
+    "online.validation.noSession": "没有保存的在线会话。",
+  },
+};

@@ -13,6 +13,8 @@ import { GameOverPanel } from "@/components/GameOverPanel";
 import { PassDeviceOverlay } from "@/components/PassDeviceOverlay";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { SoundToggle } from "@/components/SoundToggle";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
+import { useI18n } from "@/i18n/useI18n";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { RulesReminder } from "@/components/RulesReminder";
 import type { RoundSummary } from "@/components/roundSummary";
@@ -26,33 +28,12 @@ import {
   getDamageFloatAccentForVictim,
   getDamageFloatTier,
 } from "@/presentation/combatMotion";
-import type { GamePhase, GameState, InputAction } from "@/game/types";
+import type { GameState, InputAction } from "@/game/types";
 import { resolveRound } from "@/game/resolveRound";
 
 const DUMMY_STAGGER_INPUT: InputAction = "ROCK";
 
 type BattleMode = "LOCAL_2P" | "VS_AI";
-
-function phaseLabel(phase: GamePhase, mode: BattleMode): string {
-  switch (phase) {
-    case "P1_PICK":
-      return mode === "VS_AI" ? "Player commits" : "Player 1 commits";
-    case "PASS_TO_P2":
-      return "Seal & pass device";
-    case "P2_PICK":
-      return "Player 2 commits (hidden)";
-    case "RESOLVE":
-      return "Crossing blows";
-    case "ROUND_END":
-      return "Stand down — reconcile";
-    case "GAME_OVER":
-      return "Arena closed";
-    default: {
-      const _e: never = phase;
-      return _e;
-    }
-  }
-}
 
 interface BattleScreenProps {
   battleMode?: BattleMode;
@@ -65,6 +46,7 @@ export function BattleScreen({
   aiDifficulty = "NORMAL",
   onBackToStart,
 }: BattleScreenProps) {
+  const { t } = useI18n();
   const [game, setGame] = useState<GameState>(() =>
     createInitialGameState("P1_PICK"),
   );
@@ -186,28 +168,51 @@ export function BattleScreen({
     });
   }, []);
 
+  const phaseLabelStr = useMemo(() => {
+    switch (game.phase) {
+      case "P1_PICK":
+        return battleMode === "VS_AI"
+          ? t("battle.phase.p1PickVsAi")
+          : t("battle.phase.p1PickLocal");
+      case "PASS_TO_P2":
+        return t("battle.phase.passDevice");
+      case "P2_PICK":
+        return t("battle.phase.p2Pick");
+      case "RESOLVE":
+        return t("battle.phase.resolve");
+      case "ROUND_END":
+        return t("battle.phase.roundEnd");
+      case "GAME_OVER":
+        return t("battle.phase.gameOver");
+      default: {
+        const _e: never = game.phase;
+        return _e;
+      }
+    }
+  }, [battleMode, game.phase, t]);
+
   const prompt = useMemo(() => {
     switch (game.phase) {
       case "P1_PICK":
         return battleMode === "VS_AI"
-          ? "Choose a legal maneuver, then confirm to resolve against the training bot."
-          : "Player 1: choose a legal maneuver, then tap Seal Player 1. Player 2 still cannot see your pick.";
+          ? t("battle.prompt.p1PickVsAi")
+          : t("battle.prompt.p1PickLocal");
       case "RESOLVE":
         return battleMode === "VS_AI" && aiThinking
-          ? "Training bot is choosing a maneuver..."
-          : "Crossing blows.";
+          ? t("battle.prompt.resolveVsAiThinking")
+          : t("battle.prompt.resolve");
       case "PASS_TO_P2":
-        return "Pass the device. Player 2 must confirm on the overlay before the blind pick opens.";
+        return t("battle.prompt.pass");
       case "P2_PICK":
-        return "Player 2: choose your maneuver, then tap Seal & resolve round. Player 1’s pick stays hidden until you resolve.";
+        return t("battle.prompt.p2Pick");
       case "ROUND_END":
-        return "Review the clash tableau and ledger below. When ready, tap Next round.";
+        return t("battle.prompt.roundEnd");
       case "GAME_OVER":
-        return "A fighter reached 0 HP — use Restart on the overlay or Reset match above.";
+        return t("battle.prompt.gameOver");
       default:
         return "";
     }
-  }, [aiThinking, battleMode, game.phase]);
+  }, [aiThinking, battleMode, game.phase, t]);
 
   const activePlayer: "P1" | "P2" | null =
     game.phase === "P1_PICK"
@@ -300,23 +305,24 @@ export function BattleScreen({
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3 lg:gap-2 lg:border-slate-800/60 lg:pb-2 lg:pt-0">
           <div className="min-w-0">
             <p className="text-[0.55rem] font-bold uppercase tracking-[0.35em] text-amber-600/90 lg:text-[0.5rem] lg:tracking-[0.32em]">
-              {battleMode === "VS_AI" ? "Player vs AI" : "Pass-and-play"}
+              {battleMode === "VS_AI" ? t("battle.vsAi") : t("battle.passPlay")}
               {battleMode === "VS_AI"
-                ? ` · ${aiDifficulty === "NORMAL" ? "Normal" : "Easy"}`
+                ? ` · ${aiDifficulty === "NORMAL" ? t("start.difficultyNormal") : t("start.difficultyEasy")}`
                 : ""}
             </p>
             <h1 className="truncate text-2xl font-black tracking-tight text-white md:text-3xl lg:text-xl lg:leading-tight">
-              Tactical Duel
+              {t("battle.tacticalDuel")}
             </h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
             <SoundToggle compact />
             <button
               type="button"
               onClick={resetWithSound}
               className="shrink-0 rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-2 text-[0.65rem] font-bold uppercase tracking-widest text-slate-200 shadow backdrop-blur-md hover:border-amber-900/70 hover:bg-slate-900/85 md:px-5 md:text-xs lg:rounded-lg lg:px-3 lg:py-1.5 lg:text-[0.6rem]"
             >
-              Reset match
+              {t("battle.resetMatch")}
             </button>
           </div>
         </header>
@@ -342,7 +348,7 @@ export function BattleScreen({
           ) : null}
           <PlayerPanel
             duelSide="right"
-            subtitle={battleMode === "VS_AI" ? "AI Duelist · Player 2" : "Opponent · Player 2"}
+            subtitle={battleMode === "VS_AI" ? t("battle.subtitle.aiP2") : t("battle.subtitle.opponentP2")}
             snapshot={game.p2}
             isActiveTurn={activePlayer === "P2"}
             layoutVariant="hero"
@@ -367,10 +373,10 @@ export function BattleScreen({
         >
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-800/70 px-3 py-2.5 md:px-4 lg:py-1.5">
             <span className="font-mono text-xs font-black tabular-nums text-white md:text-sm lg:text-[0.7rem]">
-              Round {game.roundNumber}
+              {t("battle.roundCounter", { n: game.roundNumber })}
             </span>
             <span className="max-w-[14rem] text-right text-[0.65rem] font-bold uppercase leading-snug tracking-wide text-amber-300/90 md:max-w-none md:text-xs lg:text-[0.58rem]">
-              {phaseLabel(game.phase, battleMode)}
+              {phaseLabelStr}
             </span>
           </div>
           <p className="shrink-0 border-b border-slate-800/50 px-3 py-2 text-[0.75rem] leading-relaxed text-slate-400 md:px-4 md:text-sm lg:py-1.5 lg:text-[0.68rem] lg:leading-snug">
@@ -394,12 +400,12 @@ export function BattleScreen({
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-800/80 bg-black/20 px-4 py-10 text-center lg:min-h-[6rem] lg:py-4">
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
-                  Skirmish line
+                  {t("battle.skirmishLine")}
                 </p>
                 <p className="max-w-sm text-sm leading-relaxed text-slate-500 lg:max-w-md lg:text-xs">
                   {battleMode === "VS_AI" && aiThinking
-                    ? "AI is reading your stance..."
-                    : "Maneuver tableau, clash motion, and outcome ledger render here after Player 2 seals the round."}
+                    ? t("battle.skirmishHint.aiThinking")
+                    : t("battle.skirmishHint.local")}
                 </p>
               </div>
             )}
@@ -426,7 +432,7 @@ export function BattleScreen({
           ) : null}
           <PlayerPanel
             duelSide="left"
-            subtitle="You · Player 1"
+            subtitle={t("battle.subtitle.youP1")}
             snapshot={game.p1}
             isActiveTurn={activePlayer === "P1"}
             layoutVariant="hero"
@@ -451,11 +457,11 @@ export function BattleScreen({
         >
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 lg:pb-1.5">
             <h2 className="text-[0.65rem] font-black uppercase tracking-[0.32em] text-slate-500 lg:text-[0.58rem]">
-              Maneuver deck
+              {t("battle.modeDeck")}
             </h2>
             {activePlayer ? (
               <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-amber-300/90 lg:py-0 lg:text-[0.55rem]">
-                Live · {activePlayer}
+                {t("battle.live", { player: activePlayer })}
               </span>
             ) : null}
           </div>
@@ -465,7 +471,7 @@ export function BattleScreen({
               <ActionButtons
                 variant="deck"
                 density="hud"
-                playerState={game.p1.state}
+                playerSnapshot={game.p1}
                 selected={p1Pick}
                 onSelect={setP1Pick}
                 disabled={game.phase !== "P1_PICK"}
@@ -474,7 +480,7 @@ export function BattleScreen({
 
             {activePlayer === "P1" && game.p1.state === "STAGGERED" && (
               <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                Staggered — no maneuver. Seal with confirm to pass the hidden skip.
+                {t("battle.staggeredP1")}
               </p>
             )}
 
@@ -484,7 +490,7 @@ export function BattleScreen({
               <ActionButtons
                 variant="deck"
                 density="hud"
-                playerState={game.p2.state}
+                playerSnapshot={game.p2}
                 selected={p2Pick}
                 onSelect={setP2Pick}
                 disabled={game.phase !== "P2_PICK"}
@@ -495,7 +501,7 @@ export function BattleScreen({
               activePlayer === "P2" &&
               game.p2.state === "STAGGERED" && (
               <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                Staggered — confirm to resolve against Player 1&apos;s sealed action.
+                {t("battle.staggeredP2")}
               </p>
             )}
 
@@ -503,7 +509,7 @@ export function BattleScreen({
               game.phase !== "GAME_OVER" &&
               game.phase !== "ROUND_END" && (
                 <p className="text-center text-sm text-slate-500">
-                  Waiting for pass overlay or round reset…
+                  {t("battle.waitingPass")}
                 </p>
               )}
 
@@ -519,8 +525,8 @@ export function BattleScreen({
                   className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
                 >
                   {battleMode === "VS_AI"
-                    ? "Confirm & resolve round"
-                    : "Seal Player 1 pick"}
+                    ? t("battle.confirmVsAi")
+                    : t("battle.sealP1")}
                 </button>
               )}
               {battleMode === "LOCAL_2P" && game.phase === "P2_PICK" && (
@@ -533,7 +539,7 @@ export function BattleScreen({
                   }}
                   className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
                 >
-                  Seal &amp; resolve round
+                  {t("battle.sealResolve")}
                 </button>
               )}
               {game.phase === "ROUND_END" && (
@@ -545,20 +551,19 @@ export function BattleScreen({
                   }}
                   className="rounded-xl border border-amber-700/50 bg-amber-950/30 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/50 md:px-7 md:py-3 md:text-sm lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
                 >
-                  Next round
+                  {t("battle.nextRound")}
                 </button>
               )}
             </div>
 
             {battleMode === "LOCAL_2P" && game.phase === "P2_PICK" && (
               <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.7rem] text-slate-500">
-                <span className="font-semibold text-slate-400">Hidden pick:</span>{" "}
-                Player 1&apos;s maneuver is not shown until you resolve.
+                {t("battle.hiddenPick")}
               </p>
             )}
             {battleMode === "VS_AI" ? (
               <p className="rounded-lg border border-slate-800/80 bg-black/25 px-2 py-1.5 text-[0.68rem] text-slate-500">
-                AI uses public stance information only.
+                {t("battle.aiPublicOnly")}
               </p>
             ) : null}
           </div>
@@ -574,7 +579,7 @@ export function BattleScreen({
 
           <details className="rounded-xl border border-slate-900/60 bg-black/25 text-slate-400 backdrop-blur-sm lg:min-h-0 lg:min-w-0 lg:flex-1 [&_summary::-webkit-details-marker]:hidden">
             <summary className="cursor-pointer px-3 py-2.5 text-[0.65rem] font-bold uppercase tracking-[0.26em] text-slate-500 md:px-4 md:py-3 md:text-xs lg:py-1.5 lg:text-[0.58rem]">
-              Tactical rules reference
+              {t("battle.rulesReference")}
             </summary>
             <div className="border-t border-slate-800/70 px-3 pb-3 pt-2 lg:max-h-[min(40vh,16rem)] lg:overflow-y-auto">
               <RulesReminder />

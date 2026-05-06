@@ -1,13 +1,6 @@
 import { resolveRound } from "@/game/resolveRound";
 import type { GameState, InputAction } from "@/game/types";
 
-const INPUT_LABELS: Record<InputAction, string> = {
-  SCISSORS: "Scissors",
-  ROCK: "Rock",
-  PAPER: "Paper",
-  HOLD: "Hold",
-};
-
 export function cloneGameState(source: GameState): GameState {
   return {
     ...source,
@@ -32,6 +25,3 @@ export function resolveTutorialRound(
   return resolveRound(starting, playerAction, opponentAction);
 }
 
-export function inputActionLabel(action: InputAction): string {
-  return INPUT_LABELS[action];
-}

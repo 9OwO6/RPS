@@ -94,4 +94,14 @@ describe("chooseAiAction", () => {
       randomSpy.mockRestore();
     }
   });
+
+  it("never chooses Paper when paperStreak >= 2", () => {
+    const game = withP2State("NORMAL", { paperStreak: 2 });
+    for (let i = 0; i < 120; i += 1) {
+      const easy = chooseAiAction(game, "P2", "EASY");
+      const normal = chooseAiAction(game, "P2", "NORMAL");
+      expect(easy).not.toBe("PAPER");
+      expect(normal).not.toBe("PAPER");
+    }
+  });
 });

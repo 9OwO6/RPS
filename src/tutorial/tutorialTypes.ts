@@ -7,13 +7,10 @@ export type TutorialSuccessCheck = (
 
 export interface TutorialStep {
   id: string;
-  title: string;
-  objective: string;
-  explanation: string;
+  /** 1-based lesson index for i18n keys `tutorial.l{n}.*`. */
+  lessonNumber: number;
   startingGameState: GameState;
   opponentAction: InputAction;
   requiredPlayerAction: InputAction;
   successCondition: TutorialSuccessCheck;
-  successMessage: string;
-  failureMessage: string;
 }

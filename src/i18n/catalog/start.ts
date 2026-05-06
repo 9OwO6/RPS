@@ -1,0 +1,46 @@
+import type { Locale } from "@/i18n/locales";
+
+export const start: Record<Locale, Record<string, string>> = {
+  en: {
+    "start.tagline": "Pass-and-play arena",
+    "start.title": "RPS Tactical Duel",
+    "start.subtitle":
+      "Same-table duel: seal picks, pass the device, then resolve — no peeking at the other fighter's card until the round locks in.",
+    "start.tutorial": "Tutorial",
+    "start.tutorialHint": "Guided drills — engine-accurate, step by step",
+    "start.localDuel": "Local Duel",
+    "start.localDuelHint": "Pass-and-play · two humans, one device",
+    "start.rules": "Rules",
+    "start.rulesHint": "Full tactical reference",
+    "start.playerVsAi": "Player vs AI",
+    "start.playerVsAiHint": "Basic training bot opponent",
+    "start.easy": "Easy",
+    "start.normal": "Normal",
+    "start.startVsAi": "Start vs AI ({difficulty})",
+    "start.onlineDuel": "Online Duel",
+    "start.onlineDuelHint": "Socket.IO duel · server resolves rounds",
+    "start.difficultyEasy": "Easy",
+    "start.difficultyNormal": "Normal",
+  },
+  zh: {
+    "start.tagline": "同桌竞技场",
+    "start.title": "战术猜拳",
+    "start.subtitle":
+      "同桌对战：先密封出牌，再传递设备，最后揭晓——在回合锁定之前不要偷看对手的招式卡。",
+    "start.tutorial": "教程",
+    "start.tutorialHint": "循序练习 · 与正式引擎一致",
+    "start.localDuel": "本地双人",
+    "start.localDuelHint": "传递设备 · 两名玩家共用一台设备",
+    "start.rules": "规则说明",
+    "start.rulesHint": "完整战术说明",
+    "start.playerVsAi": "人机对战",
+    "start.playerVsAiHint": "基础练习机器人对手",
+    "start.easy": "简单",
+    "start.normal": "普通",
+    "start.startVsAi": "开始人机对战（{difficulty}）",
+    "start.onlineDuel": "在线对战",
+    "start.onlineDuelHint": "Socket.IO 对战 · 服务器结算回合",
+    "start.difficultyEasy": "简单",
+    "start.difficultyNormal": "普通",
+  },
+};

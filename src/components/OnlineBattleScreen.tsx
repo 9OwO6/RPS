@@ -21,6 +21,10 @@ import { GameOverPanel } from "@/components/GameOverPanel";
 import { PlayerPanel } from "@/components/PlayerPanel";
 import { RoundResultSummary } from "@/components/RoundResultSummary";
 import { SoundToggle } from "@/components/SoundToggle";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
+import { localizedGamePhase, localizedRoomStatus } from "@/i18n/gameTerms";
+import { localizedSocketError } from "@/i18n/onlineErrors";
+import { useI18n } from "@/i18n/useI18n";
 import type { RoundSummary } from "@/components/roundSummary";
 import { buildRoundSummary } from "@/components/roundSummary";
 import type { GameState, InputAction, PlayerId } from "@/game/types";
@@ -42,6 +46,8 @@ import type {
 } from "@/online/onlineTypes";
 import { clearOnlineSession } from "@/online/onlineSession";
 
+type OpponentNotice = { playerId: string };
+
 interface OnlineBattleScreenProps {
   socket: Socket;
   roomCode: string;
@@ -61,12 +67,13 @@ export function OnlineBattleScreen({
   onLeaveOnlineMode,
   onBackToLobby,
 }: OnlineBattleScreenProps) {
+  const { t } = useI18n();
   const [roomState, setRoomState] =
     useState<PublicOnlineRoomState>(initialRoomState);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<OpponentNotice | null>(null);
   const [error, setError] = useState<{
-    message: string;
     code?: string;
+    message?: string;
   } | null>(null);
   const [selected, setSelected] = useState<InputAction | null>(null);
   const [combatFrame, setCombatFrame] = useState<{
@@ -89,13 +96,7 @@ export function OnlineBattleScreen({
       const oppDisconnectedNow =
         opp !== undefined && opp.connected === false;
       setError(
-        oppDisconnectedNow
-          ? {
-              message:
-                "Opponent disconnected. Waiting for reconnect…",
-              code: "OPPONENT_DISCONNECTED",
-            }
-          : null,
+        oppDisconnectedNow ? { code: "OPPONENT_DISCONNECTED" } : null,
       );
     };
 
@@ -138,7 +139,7 @@ export function OnlineBattleScreen({
 
     const onPlayerLeft = (payload: PlayerLeftPayload) => {
       if (payload.roomCode !== roomCodeUpper) return;
-      setNotice(`Player ${payload.playerId} disconnected or left the room.`);
+      setNotice({ playerId: payload.playerId });
     };
 
     const onErr = (payload: ErrorMessagePayload) => {
@@ -161,6 +162,19 @@ export function OnlineBattleScreen({
       socket.off("error_message", onErr);
     };
   }, [socket, roomCodeUpper, opponentId]);
+
+  const noticeText = useMemo(
+    () =>
+      notice
+        ? t("online.notice.playerDisconnected", { id: notice.playerId })
+        : null,
+    [notice, t],
+  );
+
+  const errorText =
+    error === null
+      ? null
+      : localizedSocketError(t, error.code, error.message ?? "");
 
   useEffect(() => {
     if (roomState.status === "IN_GAME" && roomState.gameState.phase === "P1_PICK") {
@@ -377,19 +391,18 @@ export function OnlineBattleScreen({
   }, [onBackToLobby, roomCodeUpper, socket, stopEndStinger]);
 
   const hudPrompt = useMemo(() => {
-    if (opponentDisconnected)
-      return "Opponent disconnected — waiting for reconnect…";
-    if (game.phase === "GAME_OVER") return "Match settled.";
+    if (opponentDisconnected) return t("online.hud.disconnected");
+    if (game.phase === "GAME_OVER") return t("online.hud.matchSettled");
     if (!picking) {
       if (game.phase === "ROUND_END") {
-        return "Round resolved — review the tableau, then signal when you are ready.";
+        return t("online.hud.roundResolvedReview");
       }
-      return roomState.status;
+      return localizedRoomStatus(t, roomState.status);
     }
-    if (localSnap.state === "STAGGERED") return "Staggered — server auto-resolves your lane.";
-    if (localLocked && opponentLocked) return "Both duelists locked. Resolving…";
-    if (localLocked) return "You locked in. Waiting for opponent…";
-    return "Choose a legal maneuver, then lock in.";
+    if (localSnap.state === "STAGGERED") return t("online.hud.staggerServer");
+    if (localLocked && opponentLocked) return t("online.hud.bothLocked");
+    if (localLocked) return t("online.hud.youLocked");
+    return t("online.hud.pickLock");
   }, [
     game.phase,
     localLocked,
@@ -398,6 +411,7 @@ export function OnlineBattleScreen({
     opponentLocked,
     picking,
     roomState.status,
+    t,
   ]);
 
   return (
@@ -420,56 +434,55 @@ export function OnlineBattleScreen({
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3 lg:gap-2 lg:border-slate-800/60 lg:pb-2 lg:pt-0">
           <div className="min-w-0">
             <p className="text-[0.55rem] font-bold uppercase tracking-[0.35em] text-amber-600/90 lg:text-[0.5rem] lg:tracking-[0.32em]">
-              Online duel · Room {roomCodeUpper}
+              {t("online.battle.header", { code: roomCodeUpper })}
             </p>
             <h1 className="truncate text-2xl font-black tracking-tight text-white md:text-3xl lg:text-xl lg:leading-tight">
-              Tactical Duel
+              {t("battle.tacticalDuel")}
             </h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle />
             <SoundToggle compact />
             <button
               type="button"
               onClick={exitWithLeave}
               className="shrink-0 rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-[0.6rem] font-bold uppercase tracking-widest text-slate-200 hover:border-amber-900/70 lg:rounded-lg lg:px-2 lg:text-[0.55rem]"
             >
-              Back to Start
+              {t("common.backToStartShort")}
             </button>
           </div>
         </header>
 
-        {notice ? (
+        {noticeText ? (
           <p className="rounded-lg border border-amber-900/40 bg-amber-950/25 px-3 py-2 text-xs text-amber-100 lg:text-[0.65rem]">
-            {notice}
+            {noticeText}
           </p>
         ) : null}
         {opponentDisconnected ? (
           <div className="rounded-lg border border-red-900/50 bg-red-950/25 px-3 py-3 text-xs text-red-100 lg:text-[0.65rem]">
-            <p className="font-bold">
-              Opponent disconnected. Waiting for reconnect…
-            </p>
+            <p className="font-bold">{t("online.error.OPPONENT_DISCONNECTED")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={backToLobby}
                 className="rounded-lg border border-red-800/60 bg-red-950/40 px-3 py-2 text-[0.6rem] font-bold uppercase tracking-widest text-red-100 hover:border-amber-700/50 hover:text-amber-100"
               >
-                Back to Online Lobby
+                {t("online.backToOnlineLobby")}
               </button>
               <button
                 type="button"
                 onClick={exitWithLeave}
                 className="rounded-lg border border-slate-600 bg-slate-900/90 px-3 py-2 text-[0.6rem] font-bold uppercase tracking-widest text-slate-200 hover:border-amber-700/50"
               >
-                Back to Start
+                {t("common.backToStartShort")}
               </button>
             </div>
           </div>
         ) : null}
-        {error && !opponentDisconnected ? (
+        {errorText && !opponentDisconnected ? (
           <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-3 py-2 text-xs text-red-100 lg:text-[0.65rem]">
-            <p>{error.message}</p>
-            {error.code ? (
+            <p>{errorText}</p>
+            {error?.code ? (
               <p className="mt-1 font-mono text-[0.55rem] text-red-300/80">
                 {error.code}
               </p>
@@ -479,15 +492,17 @@ export function OnlineBattleScreen({
         {picking ? (
           <ul className="rounded-lg border border-slate-800/70 bg-slate-950/35 px-3 py-2 text-[0.65rem] text-slate-400 lg:text-[0.6rem]">
             <li>
-              You:{" "}
+              {t("online.battle.youStatus")}{" "}
               <span className="font-semibold text-slate-200">
-                {localLocked ? "Locked in" : "Selecting"}
+                {localLocked ? t("online.battle.lockedIn") : t("online.battle.selecting")}
               </span>
             </li>
             <li>
-              Opponent:{" "}
+              {t("online.battle.opponentStatus")}{" "}
               <span className="font-semibold text-slate-200">
-                {opponentLocked ? "Locked in" : "Not locked"}
+                {opponentLocked
+                  ? t("online.battle.lockedIn")
+                  : t("online.battle.notLocked")}
               </span>
             </li>
           </ul>
@@ -513,7 +528,7 @@ export function OnlineBattleScreen({
             ) : null}
             <PlayerPanel
               duelSide="right"
-              subtitle={`Opponent · ${opponentId}`}
+              subtitle={t("battle.opponentLabel", { id: opponentId })}
               snapshot={oppSnap}
               isActiveTurn={false}
               layoutVariant="hero"
@@ -537,10 +552,12 @@ export function OnlineBattleScreen({
           >
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-800/70 px-3 py-2.5 md:px-4 lg:py-1.5">
               <span className="font-mono text-xs font-black tabular-nums text-white md:text-sm lg:text-[0.7rem]">
-                Round {game.roundNumber}
+                {t("battle.roundCounter", { n: game.roundNumber })}
               </span>
               <span className="max-w-[14rem] text-right text-[0.65rem] font-bold uppercase leading-snug tracking-wide text-amber-300/90 md:max-w-none md:text-xs lg:text-[0.58rem]">
-                Online · {game.phase}
+                {t("online.battle.phaseLabel", {
+                  phase: localizedGamePhase(t, game.phase),
+                })}
               </span>
             </div>
             <p className="shrink-0 border-b border-slate-800/50 px-3 py-2 text-[0.75rem] leading-relaxed text-slate-400 md:px-4 md:text-sm lg:py-1.5 lg:text-[0.68rem] lg:leading-snug">
@@ -564,10 +581,10 @@ export function OnlineBattleScreen({
               ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-800/80 bg-black/20 px-4 py-10 text-center lg:min-h-[6rem] lg:py-4">
                   <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
-                    Skirmish line
+                    {t("battle.skirmishLine")}
                   </p>
                   <p className="max-w-sm text-sm leading-relaxed text-slate-500 lg:max-w-md lg:text-xs">
-                    Outcome tableau appears here once the server resolves the round.
+                    {t("battle.skirmishHint.online")}
                   </p>
                 </div>
               )}
@@ -593,7 +610,7 @@ export function OnlineBattleScreen({
             ) : null}
             <PlayerPanel
               duelSide="left"
-              subtitle={`You · ${playerId}`}
+              subtitle={t("battle.youLabel", { id: playerId })}
               snapshot={localSnap}
               isActiveTurn={picking && !localLocked}
               layoutVariant="hero"
@@ -617,11 +634,11 @@ export function OnlineBattleScreen({
           >
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 lg:pb-1.5">
               <h2 className="text-[0.65rem] font-black uppercase tracking-[0.32em] text-slate-500 lg:text-[0.58rem]">
-                Maneuver deck
+                {t("battle.modeDeck")}
               </h2>
               {picking && !localLocked ? (
                 <span className="rounded-md border border-amber-900/40 bg-amber-950/30 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest text-amber-300/90 lg:py-0 lg:text-[0.55rem]">
-                  Lock when ready
+                  {t("online.battle.lockWhenReady")}
                 </span>
               ) : null}
             </div>
@@ -632,7 +649,7 @@ export function OnlineBattleScreen({
                   <ActionButtons
                     variant="deck"
                     density="hud"
-                    playerState={localSnap.state}
+                    playerSnapshot={localSnap}
                     selected={selected}
                     onSelect={setSelected}
                     disabled={
@@ -651,7 +668,7 @@ export function OnlineBattleScreen({
                       onClick={lockIn}
                       className="rounded-xl bg-amber-500 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600 lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
                     >
-                      Lock in maneuver
+                      {t("online.battle.lockIn")}
                     </button>
                   </div>
                 </>
@@ -659,7 +676,7 @@ export function OnlineBattleScreen({
 
               {picking && localSnap.state === "STAGGERED" ? (
                 <p className="rounded-xl border border-red-900/40 bg-red-950/20 px-3 py-2.5 text-sm text-red-100">
-                  Staggered — your lane locks automatically for this round.
+                  {t("online.battle.staggerAuto")}
                 </p>
               ) : null}
 
@@ -672,32 +689,33 @@ export function OnlineBattleScreen({
                       onClick={signalReadyForNextRound}
                       className="rounded-xl border border-amber-700/50 bg-amber-950/30 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-amber-200 transition hover:border-amber-500 hover:bg-amber-950/50 disabled:cursor-not-allowed disabled:opacity-40 lg:rounded-lg lg:px-5 lg:py-2 lg:text-[0.65rem]"
                     >
-                      Ready for Next Round
+                      {t("online.battle.readyNext")}
                     </button>
                   ) : (
                     <p className="text-sm font-semibold text-emerald-200/95">
-                      You are ready.
+                      {t("online.battle.youReady")}
                     </p>
                   )}
                   {opponentNextReady ? (
                     <p className="text-sm font-semibold text-slate-200">
-                      Opponent is ready.
+                      {t("online.battle.opponentReady")}
                     </p>
                   ) : null}
                   {roomState.nextRoundCountdownEndsAt !== undefined &&
                   game.phase === "ROUND_END" ? (
                     <p className="text-xs tabular-nums text-amber-200/90">
                       {countdownSeconds !== null && countdownSeconds > 0
-                        ? `Next round starts in ${countdownSeconds}…`
-                        : "Next round starting soon…"}
+                        ? t("online.battle.countdown", {
+                            n: countdownSeconds,
+                          })
+                        : t("online.battle.countdownSoon")}
                     </p>
                   ) : null}
                 </div>
               ) : null}
 
               <p className="rounded-lg border border-slate-800 bg-black/35 px-2 py-1.5 text-[0.7rem] text-slate-500">
-                Online resolves on the server — picks stay hidden until the official
-                clash result arrives.
+                {t("online.battle.hiddenNote")}
               </p>
             </div>
           </section>

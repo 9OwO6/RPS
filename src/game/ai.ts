@@ -1,4 +1,4 @@
-import { getAvailableInputActions } from "@/game/actionAvailability";
+import { getAvailableInputActionsForPlayer } from "@/game/actionAvailability";
 import type { GameState, InputAction, PlayerId, PlayerSnapshot } from "@/game/types";
 
 export type AiDifficulty = "EASY" | "NORMAL";
@@ -74,7 +74,7 @@ export function chooseAiAction(
    */
   const ai = aiPlayerId === "P1" ? gameState.p1 : gameState.p2;
   const opponent = aiPlayerId === "P1" ? gameState.p2 : gameState.p1;
-  const legal = getAvailableInputActions(ai.state);
+  const legal = getAvailableInputActionsForPlayer(ai);
 
   if (ai.state === "STAGGERED") {
     return "ROCK";

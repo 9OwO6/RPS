@@ -1,6 +1,7 @@
 "use client";
 
 import { useSound } from "@/audio/SoundContext";
+import { useI18n } from "@/i18n/useI18n";
 
 interface PassDeviceOverlayProps {
   open: boolean;
@@ -12,6 +13,7 @@ export function PassDeviceOverlay({
   onContinueAsP2,
 }: PassDeviceOverlayProps) {
   const { play } = useSound();
+  const { t } = useI18n();
 
   if (!open) return null;
 
@@ -28,10 +30,10 @@ export function PassDeviceOverlay({
           ∴
         </div>
         <p className="mt-6 text-[0.7rem] font-bold uppercase tracking-[0.55em] text-amber-500/95">
-          Classified maneuver
+          {t("passDevice.tagline")}
         </p>
         <h2 id="pass-device-title" className="mt-2 text-3xl font-black text-white">
-          Pass the screen
+          {t("passDevice.title")}
         </h2>
 
         <ul
@@ -41,25 +43,17 @@ export function PassDeviceOverlay({
           <li className="flex gap-3">
             <span className="shrink-0 font-mono text-amber-500">01</span>
             <span>
-              <strong className="text-slate-100">Hidden commit:</strong> Player
-              1&apos;s action is locked and must stay{" "}
-              <strong className="text-amber-200">invisible</strong> to Player 2
-              until the round resolves.
+              <strong className="text-slate-100">{t("passDevice.li1Strong")}</strong>{" "}
+              {t("passDevice.li1Rest")}
             </span>
           </li>
           <li className="flex gap-3">
             <span className="shrink-0 font-mono text-amber-500">02</span>
-            <span>
-              Physical pass: hand off the phone or lid the laptop — no peeking
-              at the duel record until both picks are finalized.
-            </span>
+            <span>{t("passDevice.li2")}</span>
           </li>
           <li className="flex gap-3">
             <span className="shrink-0 font-mono text-amber-500">03</span>
-            <span>
-              Only Player 2 should tap the button below once they have the device
-              and are ready to pick without seeing Player 1&apos;s maneuver.
-            </span>
+            <span>{t("passDevice.li3")}</span>
           </li>
         </ul>
 
@@ -71,7 +65,7 @@ export function PassDeviceOverlay({
             onContinueAsP2();
           }}
         >
-          I&apos;m Player 2 — continue to blind pick
+          {t("passDevice.cta")}
         </button>
       </div>
     </div>

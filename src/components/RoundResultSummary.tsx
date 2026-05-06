@@ -1,10 +1,11 @@
 "use client";
 
-import { describeEffectiveAction } from "@/game/logMessages";
 import {
-  describeStateArrow,
-  type RoundSummary,
-} from "@/components/roundSummary";
+  formatStateArrow,
+  localizedLedgerEffectiveLine,
+} from "@/i18n/gameTerms";
+import { useI18n } from "@/i18n/useI18n";
+import type { RoundSummary } from "@/components/roundSummary";
 import {
   effectiveActionBadgeClass,
   effectiveActionBadgeLetter,
@@ -20,11 +21,29 @@ export function RoundResultSummary({
   summary,
   variant = "standalone",
 }: RoundResultSummaryProps) {
+  const { t } = useI18n();
   const embedded = variant === "embedded";
+
+  const p1Line = localizedLedgerEffectiveLine(t, "P1", summary.p1Effective);
+  const p2Line = localizedLedgerEffectiveLine(t, "P2", summary.p2Effective);
+  const p1Arrow = formatStateArrow(
+    t,
+    summary.p1StateBefore,
+    summary.p1StateAfter,
+  );
+  const p2Arrow = formatStateArrow(
+    t,
+    summary.p2StateBefore,
+    summary.p2StateAfter,
+  );
+
+  const titleKey = embedded
+    ? "roundSummary.titleEmbedded"
+    : "roundSummary.titleStandalone";
 
   return (
     <section
-      aria-label={`Round ${summary.roundCompleted} result`}
+      aria-label={t(titleKey, { n: summary.roundCompleted })}
       className={
         embedded
           ? "rounded-lg border border-slate-800/45 bg-black/18 px-2.5 py-2.5 shadow-inner backdrop-blur-sm sm:px-3 sm:py-3 lg:py-2 lg:px-2 [&_dd]:lg:text-[0.72rem] [&_dt]:lg:text-[0.58rem] [&_li]:lg:text-[0.72rem]"
@@ -45,53 +64,51 @@ export function RoundResultSummary({
               : "text-lg font-bold tracking-tight text-white"
           }
         >
-          Round {summary.roundCompleted}{" "}
-          <span className="font-normal text-slate-500">— ledger</span>
+          {t(titleKey, { n: summary.roundCompleted })}
         </h2>
         <p className="text-[0.65rem] uppercase tracking-widest text-amber-500/80">
-          Outcome
+          {t("roundSummary.outcome")}
         </p>
       </div>
       {!embedded ? (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
-          Letter badges (S / R / P) are a quick color key. Narration matches the
-          same resolve step as the clash tableau above.
+          {t("roundSummary.hintStandalone")}
         </p>
       ) : (
         <p className="mt-2 text-[0.65rem] leading-relaxed text-slate-500">
-          S / R / P badges match the clash above.
+          {t("roundSummary.hintEmbedded")}
         </p>
       )}
 
       <dl className={embedded ? "mt-3 grid gap-3 sm:grid-cols-2" : "mt-4 grid gap-4 sm:grid-cols-2"}>
         <div className="rounded-lg border border-slate-700/90 bg-black/25 p-3">
           <dt className="text-xs uppercase tracking-wide text-slate-500">
-            Player 1 maneuver
+            {t("roundSummary.p1Maneuver")}
           </dt>
           <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-medium text-slate-100">
             <span
               className={effectiveActionBadgeClass(summary.p1Effective)}
-              title="Action color key"
+              title={t("roundSummary.actionKeyAria")}
               aria-label={`Action key ${effectiveActionBadgeLetter(summary.p1Effective)}`}
             >
               {effectiveActionBadgeLetter(summary.p1Effective)}
             </span>
-            <span>{describeEffectiveAction("P1", summary.p1Effective)}</span>
+            <span>{p1Line}</span>
           </dd>
         </div>
         <div className="rounded-lg border border-slate-700/90 bg-black/25 p-3">
           <dt className="text-xs uppercase tracking-wide text-slate-500">
-            Player 2 maneuver
+            {t("roundSummary.p2Maneuver")}
           </dt>
           <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-medium text-slate-100">
             <span
               className={effectiveActionBadgeClass(summary.p2Effective)}
-              title="Action color key"
+              title={t("roundSummary.actionKeyAria")}
               aria-label={`Action key ${effectiveActionBadgeLetter(summary.p2Effective)}`}
             >
               {effectiveActionBadgeLetter(summary.p2Effective)}
             </span>
-            <span>{describeEffectiveAction("P2", summary.p2Effective)}</span>
+            <span>{p2Line}</span>
           </dd>
         </div>
       </dl>
@@ -99,17 +116,17 @@ export function RoundResultSummary({
       <div className={embedded ? "mt-3 grid gap-3 sm:grid-cols-2" : "mt-4 grid gap-4 sm:grid-cols-2"}>
         <div className="rounded-lg border border-slate-700/70 bg-black/20 p-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Damage dealt
+            {t("roundSummary.damageDealt")}
           </h3>
           <ul className="mt-2 space-y-1 text-sm">
             <li className="flex justify-between gap-2 tabular-nums">
-              <span className="text-slate-400">To Player 1</span>
+              <span className="text-slate-400">{t("roundSummary.toP1")}</span>
               <span className="font-semibold text-red-400/95">
                 {summary.p1DamageTaken}
               </span>
             </li>
             <li className="flex justify-between gap-2 tabular-nums">
-              <span className="text-slate-400">To Player 2</span>
+              <span className="text-slate-400">{t("roundSummary.toP2")}</span>
               <span className="font-semibold text-red-400/95">
                 {summary.p2DamageTaken}
               </span>
@@ -119,25 +136,19 @@ export function RoundResultSummary({
 
         <div className="rounded-lg border border-slate-700/70 bg-black/20 p-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Stance after round
+            {t("roundSummary.stanceAfter")}
           </h3>
           <ul className="mt-2 space-y-1 text-sm text-slate-200">
             <li className="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-              <span className="text-slate-400">Player 1</span>
+              <span className="text-slate-400">{t("common.player1")}</span>
               <span className="font-medium text-emerald-200/90 tabular-nums sm:text-right">
-                {describeStateArrow(
-                  summary.p1StateBefore,
-                  summary.p1StateAfter,
-                )}
+                {p1Arrow}
               </span>
             </li>
             <li className="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-              <span className="text-slate-400">Player 2</span>
+              <span className="text-slate-400">{t("common.player2")}</span>
               <span className="font-medium text-emerald-200/90 tabular-nums sm:text-right">
-                {describeStateArrow(
-                  summary.p2StateBefore,
-                  summary.p2StateAfter,
-                )}
+                {p2Arrow}
               </span>
             </li>
           </ul>

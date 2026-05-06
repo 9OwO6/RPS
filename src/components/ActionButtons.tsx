@@ -3,7 +3,14 @@
 import Image from "next/image";
 
 import { useSound } from "@/audio/SoundContext";
-import { ACTION_TAGLINES, getActionDisabledReason } from "@/components/actionUx";
+import { getActionCardViewModel } from "@/components/actionCardViewModel";
+import { getActionDisabledReason } from "@/components/actionUx";
+import {
+  localizedDisableReason,
+  localizedInputShort,
+  localizedInputTagline,
+} from "@/i18n/gameTerms";
+import { useI18n } from "@/i18n/useI18n";
 import { ASSETS } from "@/lib/assetPaths";
 import {
   inputActionCardBaseClasses,
@@ -12,15 +19,7 @@ import {
   inputActionCardSelectedClasses,
   inputActionManeuverLabelHintClass,
 } from "@/presentation/actionColors";
-import type { InputAction, PlayerState } from "@/game/types";
-import { getAvailableInputActions } from "@/game/actionAvailability";
-
-const TITLES: Record<InputAction, string> = {
-  SCISSORS: "Scissors",
-  ROCK: "Rock",
-  PAPER: "Paper",
-  HOLD: "Hold",
-};
+import type { InputAction, PlayerSnapshot } from "@/game/types";
 
 const ACTION_ICONS: Record<InputAction, string> = {
   SCISSORS: ASSETS.actions.SCISSORS,
@@ -30,7 +29,7 @@ const ACTION_ICONS: Record<InputAction, string> = {
 };
 
 interface ActionCardsProps {
-  playerState: PlayerState;
+  playerSnapshot: Pick<PlayerSnapshot, "state" | "paperStreak" | "scissorsStreak">;
   selected: InputAction | null;
   onSelect: (action: InputAction) => void;
   disabled?: boolean;
@@ -44,7 +43,7 @@ interface ActionCardsProps {
 }
 
 export function ActionButtons({
-  playerState,
+  playerSnapshot,
   selected,
   onSelect,
   disabled = false,
@@ -52,10 +51,9 @@ export function ActionButtons({
   density = "default",
 }: ActionCardsProps) {
   const { play } = useSound();
+  const { t } = useI18n();
 
-  if (playerState === "STAGGERED") return null;
-
-  const available = getAvailableInputActions(playerState);
+  if (playerSnapshot.state === "STAGGERED") return null;
 
   const hudDeck = variant === "deck" && density === "hud";
 
@@ -68,15 +66,19 @@ export function ActionButtons({
 
   return (
     <div className={gridClass} role="group" aria-label="Choose maneuver">
-      {(Object.keys(TITLES) as InputAction[]).map((action) => {
-        const playable = available.includes(action) && !disabled;
+      {(Object.keys(ACTION_ICONS) as InputAction[]).map((action) => {
+        const view = getActionCardViewModel(playerSnapshot, action);
+        const playable = !view.disabled && !disabled;
+        const inactiveReasonEn = playable || disabled
+          ? null
+          : getActionDisabledReason(playerSnapshot, action);
         const inactiveReason =
-          playable ? null : getActionDisabledReason(playerState, action);
+          inactiveReasonEn === null
+            ? null
+            : localizedDisableReason(t, playerSnapshot, action);
         const muted = !playable;
         const reasonText =
-          disabled && playable
-            ? "Wait until it is your turn to commit this pick."
-            : inactiveReason;
+          disabled && playable ? t("action.waitTurn") : inactiveReason;
 
         const iconDimmed = muted || (disabled && playable);
 
@@ -102,12 +104,12 @@ export function ActionButtons({
               hudDeck ? "lg:justify-center" : "",
               "focus-visible:ring-2 focus-visible:ring-amber-400/70",
               selected === action && playable
-                ? inputActionCardSelectedClasses(action)
+                ? inputActionCardSelectedClasses(view.displayAction)
                 : playable
                   ? [
                       "cursor-pointer text-slate-100",
                       inputActionCardBaseClasses(),
-                      inputActionCardHoverClasses(action),
+                      inputActionCardHoverClasses(view.displayAction),
                     ].join(" ")
                   : inputActionCardDisabledShellClasses(),
             ].join(" ")}
@@ -124,7 +126,7 @@ export function ActionButtons({
                 aria-hidden
               >
                 <Image
-                  src={ACTION_ICONS[action]}
+                  src={ACTION_ICONS[view.displayAction]}
                   alt=""
                   width={40}
                   height={40}
@@ -136,11 +138,11 @@ export function ActionButtons({
                   className={[
                     "text-[0.65rem] font-bold uppercase tracking-[0.2em] lg:text-[0.55rem] lg:leading-none",
                     playable
-                      ? inputActionManeuverLabelHintClass(action)
+                      ? inputActionManeuverLabelHintClass(view.displayAction)
                       : "text-slate-500",
                   ].join(" ")}
                 >
-                  Maneuver
+                  {t("action.maneuver")}
                 </span>
                 <span
                   className={`mt-1 block font-bold leading-tight text-white lg:mt-0 ${
@@ -149,7 +151,9 @@ export function ActionButtons({
                       : "text-lg"
                   }`}
                 >
-                  {TITLES[action]}
+                  {view.displayKind === "forcedRockLv1"
+                    ? t("action.ROCK_LV1_RELEASE.short")
+                    : localizedInputShort(t, action)}
                 </span>
               </div>
             </div>
@@ -158,11 +162,14 @@ export function ActionButtons({
                 muted ? "text-slate-600" : "text-slate-400"
               }`}
             >
-              {ACTION_TAGLINES[action]}
+              {view.displayKind === "forcedRockLv1"
+                ? t("action.ROCK_LV1_RELEASE.tagline")
+                : localizedInputTagline(t, action)}
             </span>
             {muted && reasonText !== null ? (
               <span className="mt-2 rounded border border-slate-800/80 bg-slate-950/60 px-2 py-1.5 text-[0.6875rem] leading-snug text-slate-500">
-                Locked: {reasonText}
+                {t("action.lockedPrefix")}
+                {reasonText}
               </span>
             ) : disabled && playable ? (
               <span className="mt-2 text-[0.6875rem] text-amber-200/70">

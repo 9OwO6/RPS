@@ -1,12 +1,18 @@
-import { getAvailableInputActions } from "@/game/actionAvailability";
-import type { InputAction, PlayerState } from "@/game/types";
+import { getAvailableInputActionsForPlayer } from "@/game/actionAvailability";
+import type { InputAction, PlayerSnapshot, PlayerState } from "@/game/types";
 
 export function getActionDisabledReason(
-  state: PlayerState,
+  snapshot: Pick<PlayerSnapshot, "state" | "paperStreak">,
   action: InputAction,
 ): string | null {
+  const { state, paperStreak } = snapshot;
   if (state === "STAGGERED") return null;
-  if (getAvailableInputActions(state).includes(action)) return null;
+  if (getAvailableInputActionsForPlayer({ state, paperStreak }).includes(action)) {
+    return null;
+  }
+  if (action === "PAPER" && paperStreak >= 2) {
+    return "After two consecutive Papers, Paper is locked. Choose another action first.";
+  }
 
   switch (action) {
     case "HOLD":

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSound } from "@/audio/SoundContext";
+import { useI18n } from "@/i18n/useI18n";
 
 interface SoundToggleProps {
   className?: string;
@@ -9,6 +10,7 @@ interface SoundToggleProps {
 }
 
 export function SoundToggle({ className = "", compact = false }: SoundToggleProps) {
+  const { t } = useI18n();
   const {
     masterEnabled,
     musicEnabled,
@@ -27,34 +29,34 @@ export function SoundToggle({ className = "", compact = false }: SoundToggleProp
     <div
       className={`inline-flex items-center gap-1 rounded-lg border border-slate-600/80 bg-slate-950/70 px-1.5 py-1 backdrop-blur-md ${className}`}
       role="group"
-      aria-label="Audio settings"
+      aria-label={t("audio.groupAria")}
     >
       <button
         type="button"
         onClick={toggleMasterEnabled}
         className={`rounded-md border px-2 py-1 text-[0.58rem] font-bold uppercase tracking-widest transition hover:border-amber-700/50 ${chipClass(masterEnabled)}`}
         aria-pressed={masterEnabled}
-        aria-label="Toggle master audio"
+        aria-label={t("audio.masterAria")}
       >
-        {compact ? "A" : "Audio"}
+        {compact ? t("audio.masterCompact") : t("audio.master")}
       </button>
       <button
         type="button"
         onClick={toggleMusicEnabled}
         className={`rounded-md border px-2 py-1 text-[0.58rem] font-bold uppercase tracking-widest transition hover:border-amber-700/50 ${chipClass(musicEnabled)}`}
         aria-pressed={musicEnabled}
-        aria-label="Toggle music"
+        aria-label={t("audio.musicAria")}
       >
-        {compact ? "M" : "Music"}
+        {compact ? t("audio.musicCompact") : t("audio.music")}
       </button>
       <button
         type="button"
         onClick={toggleSfxEnabled}
         className={`rounded-md border px-2 py-1 text-[0.58rem] font-bold uppercase tracking-widest transition hover:border-amber-700/50 ${chipClass(sfxEnabled)}`}
         aria-pressed={sfxEnabled}
-        aria-label="Toggle sound effects"
+        aria-label={t("audio.sfxAria")}
       >
-        {compact ? "SFX" : "SFX"}
+        {compact ? t("audio.sfxCompact") : t("audio.sfx")}
       </button>
     </div>
   );

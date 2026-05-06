@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/useI18n";
+
 interface TutorialResultProps {
   variant: "success" | "failure";
   message: string;
@@ -15,6 +17,7 @@ export function TutorialResult({
   onNextLesson,
   canAdvance,
 }: TutorialResultProps) {
+  const { t } = useI18n();
   const isSuccess = variant === "success";
 
   return (
@@ -29,7 +32,7 @@ export function TutorialResult({
       ].join(" ")}
     >
       <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
-        {isSuccess ? "Lesson cleared" : "Try again"}
+        {isSuccess ? t("tutorial.lessonCleared") : t("tutorial.tryAgain")}
       </h2>
       <p className="mt-2 text-sm leading-relaxed">{message}</p>
       <div className="mt-4 flex flex-wrap gap-3">
@@ -39,7 +42,7 @@ export function TutorialResult({
             onClick={onRetry}
             className="rounded-lg border border-slate-600 bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-100 hover:border-amber-500/50"
           >
-            Retry
+            {t("tutorial.retry")}
           </button>
         ) : null}
         {isSuccess && canAdvance && onNextLesson ? (
@@ -48,13 +51,11 @@ export function TutorialResult({
             onClick={onNextLesson}
             className="rounded-lg border border-amber-700/60 bg-amber-950/50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-amber-50 hover:border-amber-500/60"
           >
-            Next lesson
+            {t("tutorial.nextLesson")}
           </button>
         ) : null}
         {isSuccess && !canAdvance ? (
-          <p className="text-xs text-emerald-200/80">
-            You have completed all tutorial lessons.
-          </p>
+          <p className="text-xs text-emerald-200/80">{t("tutorial.allComplete")}</p>
         ) : null}
       </div>
     </section>

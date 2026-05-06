@@ -141,7 +141,7 @@ function preparePlayer(
     };
   }
 
-  if (!isInputAllowed(stateBefore, input)) {
+  if (!isInputAllowed({ state: stateBefore, paperStreak: snap.paperStreak }, input)) {
     messages.push(
       invalidActionLine(playerId, input, describeStateLabel(stateBefore)),
     );
@@ -161,9 +161,6 @@ function preparePlayer(
   if (input === "PAPER") {
     nextPaperStreak = snap.paperStreak + 1;
     nextScissorsStreak = 0;
-    if (nextPaperStreak >= 3) {
-      effective = "PAPER_EXHAUSTED";
-    }
   } else if (input === "SCISSORS") {
     nextScissorsStreak = snap.scissorsStreak + 1;
     nextPaperStreak = 0;

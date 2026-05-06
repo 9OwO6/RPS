@@ -8,6 +8,8 @@ import type { AppMode } from "@/lib/appMode";
 import { ArenaBackdrop } from "@/components/ArenaBackdrop";
 import { QuickRulesBlurb } from "@/components/QuickRulesBlurb";
 import { SoundToggle } from "@/components/SoundToggle";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
+import { useI18n } from "@/i18n/useI18n";
 
 interface StartScreenProps {
   onSelectMode: (mode: Exclude<AppMode, "START">) => void;
@@ -15,14 +17,21 @@ interface StartScreenProps {
 }
 
 export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
+  const { t } = useI18n();
   const [aiDifficulty, setAiDifficulty] = useState<AiDifficulty>("NORMAL");
+
+  const difficultyLabel =
+    aiDifficulty === "NORMAL"
+      ? t("start.difficultyNormal")
+      : t("start.difficultyEasy");
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col">
       <ArenaBackdrop />
 
       <div className="pointer-events-none absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-1">
+          <LanguageToggle />
           <SoundToggle />
         </div>
       </div>
@@ -30,14 +39,13 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
       <main className="relative mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-12 pb-16 sm:py-16">
         <header className="text-center">
           <p className="text-[0.65rem] font-bold uppercase tracking-[0.45em] text-amber-600/90">
-            Pass-and-play arena
+            {t("start.tagline")}
           </p>
           <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            RPS Tactical Duel
+            {t("start.title")}
           </h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400">
-            Same-table duel: seal picks, pass the device, then resolve — no
-            peeking at the other fighter&apos;s card until the round locks in.
+            {t("start.subtitle")}
           </p>
         </header>
 
@@ -52,9 +60,9 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
             onClick={() => onSelectMode("TUTORIAL")}
             className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
-            Tutorial
+            {t("start.tutorial")}
             <span className="mt-1 block text-xs font-normal text-slate-400">
-              Guided drills — engine-accurate, step by step
+              {t("start.tutorialHint")}
             </span>
           </button>
           <button
@@ -62,9 +70,9 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
             onClick={() => onSelectMode("LOCAL_DUEL")}
             className="rounded-xl border border-amber-700/50 bg-amber-950/35 px-5 py-4 text-left text-base font-bold text-amber-50 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)] backdrop-blur-md transition hover:border-amber-500/60 hover:bg-amber-950/50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
-            Local Duel
+            {t("start.localDuel")}
             <span className="mt-1 block text-xs font-normal text-amber-200/70">
-              Pass-and-play · two humans, one device
+              {t("start.localDuelHint")}
             </span>
           </button>
           <button
@@ -72,18 +80,18 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
             onClick={() => onSelectMode("RULES")}
             className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
-            Rules
+            {t("start.rules")}
             <span className="mt-1 block text-xs font-normal text-slate-400">
-              Full tactical reference
+              {t("start.rulesHint")}
             </span>
           </button>
 
           <div className="my-2 border-t border-slate-800/80 pt-2" />
 
           <section className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left shadow-md backdrop-blur-md">
-            <p className="text-base font-bold text-slate-100">Player vs AI</p>
+            <p className="text-base font-bold text-slate-100">{t("start.playerVsAi")}</p>
             <p className="mt-1 text-xs font-normal text-slate-400">
-              Basic training bot opponent
+              {t("start.playerVsAiHint")}
             </p>
             <div className="mt-3 flex gap-2">
               <button
@@ -95,7 +103,7 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
                     : "border-slate-600 bg-slate-900/70 text-slate-300 hover:border-amber-700/50"
                 }`}
               >
-                Easy
+                {t("start.easy")}
               </button>
               <button
                 type="button"
@@ -106,7 +114,7 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
                     : "border-slate-600 bg-slate-900/70 text-slate-300 hover:border-amber-700/50"
                 }`}
               >
-                Normal
+                {t("start.normal")}
               </button>
             </div>
             <button
@@ -114,7 +122,7 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
               onClick={() => onStartVsAi(aiDifficulty)}
               className="mt-3 w-full rounded-xl border border-amber-700/50 bg-amber-950/35 px-5 py-3 text-left text-sm font-bold text-amber-50 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)] transition hover:border-amber-500/60 hover:bg-amber-950/50 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
             >
-              Start vs AI ({aiDifficulty === "NORMAL" ? "Normal" : "Easy"})
+              {t("start.startVsAi", { difficulty: difficultyLabel })}
             </button>
           </section>
           <button
@@ -122,9 +130,9 @@ export function StartScreen({ onSelectMode, onStartVsAi }: StartScreenProps) {
             onClick={() => onSelectMode("ONLINE_DUEL")}
             className="rounded-xl border border-slate-600 bg-slate-800/90 px-5 py-4 text-left text-base font-bold text-slate-100 shadow-md backdrop-blur-md transition hover:border-amber-500/50 hover:bg-slate-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-amber-400/70"
           >
-            Online Duel
+            {t("start.onlineDuel")}
             <span className="mt-1 block text-xs font-normal text-slate-400">
-              Socket.IO duel · server resolves rounds
+              {t("start.onlineDuelHint")}
             </span>
           </button>
         </nav>

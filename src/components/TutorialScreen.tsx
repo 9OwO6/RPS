@@ -15,6 +15,9 @@ import { SoundToggle } from "@/components/SoundToggle";
 import { TutorialLessonCard } from "@/components/TutorialLessonCard";
 import { TutorialResult } from "@/components/TutorialResult";
 import { buildRoundSummary } from "@/components/roundSummary";
+import { LanguageToggle } from "@/i18n/LanguageToggle";
+import { localizedInputShort } from "@/i18n/gameTerms";
+import { useI18n } from "@/i18n/useI18n";
 import type { GameState, InputAction } from "@/game/types";
 import { TUTORIAL_STEP_COUNT, TUTORIAL_STEPS } from "@/tutorial/tutorialSteps";
 import { getBattleFeedback } from "@/presentation/battleFeedback";
@@ -23,11 +26,7 @@ import {
   getDamageFloatAccentForVictim,
   getDamageFloatTier,
 } from "@/presentation/combatMotion";
-import {
-  cloneGameState,
-  inputActionLabel,
-  resolveTutorialRound,
-} from "@/tutorial/tutorialState";
+import { cloneGameState, resolveTutorialRound } from "@/tutorial/tutorialState";
 
 interface TutorialScreenProps {
   onBack: () => void;
@@ -35,6 +34,7 @@ interface TutorialScreenProps {
 }
 
 export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
+  const { t } = useI18n();
   const [lessonIndex, setLessonIndex] = useState(0);
   const [phase, setPhase] = useState<"idle" | "resolved">("idle");
   const [selectedAction, setSelectedAction] = useState<InputAction | null>(null);
@@ -42,6 +42,8 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
   const [lastSuccess, setLastSuccess] = useState<boolean | null>(null);
 
   const step = TUTORIAL_STEPS[lessonIndex];
+  const ln = step.lessonNumber;
+  const lessonPrefix = `tutorial.l${ln}`;
   const atLastLesson = lessonIndex >= TUTORIAL_STEP_COUNT - 1;
 
   const displayGame = useMemo(() => {
@@ -116,6 +118,13 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
 
   const showActionMatrix = !(phase === "resolved" && lastSuccess === true);
 
+  const outcomeMessage =
+    phase === "resolved" && lastSuccess !== null
+      ? lastSuccess
+        ? t(`${lessonPrefix}.success`)
+        : t(`${lessonPrefix}.failure`)
+      : "";
+
   return (
     <div className="relative z-10 min-h-screen">
       <ArenaBackdrop />
@@ -123,23 +132,24 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
       <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-6 md:pb-28 md:pt-10">
         <header className="mb-8 flex flex-col gap-4 border-b border-slate-800/90 pb-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[0.65rem] font-bold uppercase tracking-[0.4em] text-slate-500">
-            Training grounds
+            {t("tutorial.trainingGrounds")}
           </p>
           <div className="flex flex-wrap items-center gap-2">
+            <LanguageToggle />
             <SoundToggle className="shrink-0" />
             <button
               type="button"
               onClick={onBack}
               className="rounded-xl border border-slate-600 bg-slate-800/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-100 backdrop-blur-md hover:border-amber-500/50"
             >
-              Back to Start Screen
+              {t("common.backToStart")}
             </button>
             <button
               type="button"
               onClick={onSkipToDuel}
               className="rounded-xl border border-amber-900/50 bg-amber-950/35 px-4 py-2 text-xs font-bold uppercase tracking-widest text-amber-100 backdrop-blur-md hover:border-amber-500/50"
             >
-              Skip to Local Duel
+              {t("tutorial.skipToLocal")}
             </button>
           </div>
         </header>
@@ -147,21 +157,16 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
         <TutorialLessonCard
           lessonNumber={lessonIndex + 1}
           totalLessons={TUTORIAL_STEP_COUNT}
-          title={step.title}
-          objective={step.objective}
-          explanation={step.explanation}
+          title={t(`${lessonPrefix}.title`)}
+          objective={t(`${lessonPrefix}.objective`)}
+          explanation={t(`${lessonPrefix}.explanation`)}
+          footerHint={t("tutorial.footerHint")}
         />
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr,minmax(15rem,18rem)]">
           <div className="flex min-w-0 flex-col gap-10">
             <p className="max-w-full break-words rounded-lg border border-slate-800/70 bg-slate-950/40 px-3 py-2.5 text-xs leading-relaxed text-slate-400 sm:text-sm">
-              <span className="font-semibold text-slate-300">Flow:</span> read the
-              lesson → choose a legal maneuver →{" "}
-              <span className="font-semibold text-slate-300">Resolve drill</span>{" "}
-              to reveal the bot and ledger. Use{" "}
-              <span className="font-semibold text-slate-300">Retry</span> on a
-              miss, or <span className="font-semibold text-slate-300">Next lesson</span>{" "}
-              when the drill clears.
+              {t("tutorial.flow")}
             </p>
 
             <section
@@ -171,16 +176,14 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
               {phase === "resolved" ? (
                 <p>
                   <span className="font-semibold text-slate-200">
-                    Training bot played:
+                    {t("tutorial.botPlayed")}
                   </span>{" "}
                   <span className="font-bold text-amber-200/95">
-                    {inputActionLabel(step.opponentAction)}
+                    {localizedInputShort(t, step.opponentAction)}
                   </span>
                 </p>
               ) : (
-                <p className="text-slate-500">
-                  The bot&apos;s maneuver stays hidden until you resolve your pick.
-                </p>
+                <p className="text-slate-500">{t("tutorial.botHidden")}</p>
               )}
             </section>
 
@@ -204,7 +207,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                   ) : null}
                   <PlayerPanel
                     duelSide="left"
-                    subtitle="You · Player 1"
+                    subtitle={t("battle.subtitle.youP1")}
                     snapshot={displayGame.p1}
                     layoutVariant="hero"
                     isActiveTurn
@@ -245,7 +248,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                   ) : null}
                   <PlayerPanel
                     duelSide="right"
-                    subtitle="Training bot · Player 2"
+                    subtitle={t("battle.subtitle.aiP2")}
                     snapshot={displayGame.p2}
                     layoutVariant="hero"
                     isActiveTurn={false}
@@ -268,15 +271,15 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
               <section className="rounded-2xl border border-slate-800/90 bg-slate-950/55 p-5 shadow-2xl backdrop-blur-md md:p-7">
                 <div className="border-b border-slate-800 pb-4">
                   <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-500">
-                    Your maneuver
+                    {t("tutorial.yourManeuver")}
                   </h2>
                   <p className="mt-2 text-sm text-slate-400">
-                    Choose a legal action for this stance, then resolve the drill.
+                    {t("tutorial.pickLegal")}
                   </p>
                 </div>
                 <div className="mt-6 space-y-6">
                   <ActionButtons
-                    playerState={step.startingGameState.p1.state}
+                    playerSnapshot={step.startingGameState.p1}
                     selected={selectedAction}
                     onSelect={setSelectedAction}
                     disabled={phase === "resolved"}
@@ -287,7 +290,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
                     onClick={handleResolve}
                     className="rounded-xl bg-amber-500 px-7 py-3 text-sm font-black uppercase tracking-widest text-slate-950 shadow-lg transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-600"
                   >
-                    Resolve drill
+                    {t("tutorial.resolveDrill")}
                   </button>
                 </div>
               </section>
@@ -296,9 +299,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
             {phase === "resolved" && lastSuccess !== null ? (
               <TutorialResult
                 variant={lastSuccess ? "success" : "failure"}
-                message={
-                  lastSuccess ? step.successMessage : step.failureMessage
-                }
+                message={outcomeMessage}
                 onRetry={lastSuccess ? undefined : handleRetry}
                 onNextLesson={lastSuccess ? handleNextLesson : undefined}
                 canAdvance={!atLastLesson}
@@ -322,7 +323,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
 
             <details className="rounded-xl border border-slate-800/80 bg-slate-950/40 text-slate-300 backdrop-blur-md [&_summary::-webkit-details-marker]:hidden lg:hidden">
               <summary className="cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">
-                Tactical rules
+                {t("tutorial.tacticalRulesMobile")}
               </summary>
               <div className="border-t border-slate-800/70 px-3 pb-3 pt-2">
                 <RulesReminder />
@@ -334,7 +335,7 @@ export function TutorialScreen({ onBack, onSkipToDuel }: TutorialScreenProps) {
             <div className="sticky top-28">
               <details className="rounded-xl border border-slate-800/80 bg-slate-950/40 backdrop-blur-md [&_summary::-webkit-details-marker]:hidden">
                 <summary className="cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">
-                  Tactical rules
+                  {t("rulesReminder.title")}
                 </summary>
                 <div className="border-t border-slate-800/70 px-2 pb-3 pt-2">
                   <RulesReminder />

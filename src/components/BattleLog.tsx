@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { translateBattleLogLine } from "@/i18n/battleLogLocale";
+import { useI18n } from "@/i18n/useI18n";
 import type { RoundLog } from "@/game/types";
 
 interface BattleLogProps {
@@ -11,6 +13,7 @@ interface BattleLogProps {
 }
 
 export function BattleLog({ logs, embedded = false }: BattleLogProps) {
+  const { locale, t } = useI18n();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export function BattleLog({ logs, embedded = false }: BattleLogProps) {
               className="rounded-xl border border-l-4 border-l-amber-600/80 border-slate-800 bg-slate-900/50 px-4 py-3 shadow-md"
             >
               <h3 className="text-base font-black uppercase tracking-[0.2em] text-amber-300/95">
-                Round {entry.round}
+                {t("chronicle.roundTitle", { n: entry.round })}
               </h3>
               <ul className="mt-3 space-y-2 border-t border-slate-800 pt-3 text-[0.9rem] leading-relaxed text-slate-300">
                 {entry.messages.map((line, i) => (
@@ -43,7 +46,7 @@ export function BattleLog({ logs, embedded = false }: BattleLogProps) {
                     <span className="shrink-0 text-amber-700/95" aria-hidden>
                       ▸
                     </span>
-                    <span>{line}</span>
+                    <span>{translateBattleLogLine(locale, line)}</span>
                   </li>
                 ))}
               </ul>
@@ -56,7 +59,7 @@ export function BattleLog({ logs, embedded = false }: BattleLogProps) {
 
   if (embedded) {
     return (
-      <div aria-label="Battle log entries" className="min-h-0">
+      <div aria-label={t("chronicle.embeddedAria")} className="min-h-0">
         {inner}
       </div>
     );
@@ -64,11 +67,11 @@ export function BattleLog({ logs, embedded = false }: BattleLogProps) {
 
   return (
     <section
-      aria-label="Battle log"
+      aria-label={t("chronicle.sectionAria")}
       className="rounded-2xl border border-slate-700/85 bg-slate-950/60 p-5 shadow-inner backdrop-blur-md"
     >
       <h2 className="border-b border-slate-800 pb-3 text-xs font-bold uppercase tracking-[0.35em] text-slate-500">
-        Battle chronicle
+        {t("chronicle.sectionTitle")}
       </h2>
       {inner}
     </section>

@@ -442,7 +442,14 @@ export function submitActionForPlayer(
     };
   }
 
-  if (!isInputAllowed(snapshot.state, action)) {
+  if (!isInputAllowed(snapshot, action)) {
+    if (action === "PAPER" && snapshot.paperStreak >= 2) {
+      return {
+        ok: false,
+        code: "PAPER_LOCKED",
+        message: "Paper is locked after two consecutive uses.",
+      };
+    }
     return {
       ok: false,
       code: "INVALID_ACTION",

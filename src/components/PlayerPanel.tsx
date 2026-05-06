@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { INITIAL_HP } from "@/game/constants";
-import { playerStateLabel, playerStateLongLabel } from "@/components/stateLabels";
+import { playerStateLongKey, playerStateShortKey } from "@/i18n/gameTerms";
+import { useI18n } from "@/i18n/useI18n";
 import { ASSETS } from "@/lib/assetPaths";
 import type { PlayerSnapshot, PlayerState } from "@/game/types";
 
@@ -72,6 +73,7 @@ export function PlayerPanel({
   layoutVariant = "standard",
   arenaBand = "neutral",
 }: PlayerPanelProps) {
+  const { t } = useI18n();
   const compact = layoutVariant === "arenaCompact";
   const hero = layoutVariant === "hero";
   const [hitShake, setHitShake] = useState(false);
@@ -242,7 +244,7 @@ export function PlayerPanel({
 
             <div className="text-right tabular-nums">
               <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">
-                HP
+                {t("common.hp")}
               </p>
               <p
                 className={
@@ -290,10 +292,10 @@ export function PlayerPanel({
               className={`text-[0.62rem] leading-tight text-slate-500 md:text-[0.65rem] ${hero ? "lg:sr-only" : ""}`}
             >
               {hero
-                ? `${hpPct}% · trail follows heavy hits`
+                ? t("player.hpTrailHero", { pct: hpPct })
                 : compact
-                  ? `${hpPct}% integrity`
-                  : `${hpPct}% · trailing bar lags ~300ms after big hits`}
+                  ? t("player.hpTrailCompact", { pct: hpPct })
+                  : t("player.hpTrailStandard", { pct: hpPct })}
             </p>
           </div>
 
@@ -316,18 +318,18 @@ export function PlayerPanel({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              title={playerStateLongLabel(snapshot.state)}
+              title={t(playerStateLongKey(snapshot.state))}
             >
-              {playerStateLabel(snapshot.state)}
+              {t(playerStateShortKey(snapshot.state))}
             </span>
             {snapshot.state === "STAGGERED" && staggerPulse ? (
               <span className="stagger-callout rounded border border-red-800/50 bg-red-950/40 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wider text-red-200/95 sm:text-[0.6rem]">
-                Staggered
+                {t("player.staggerBadge")}
               </span>
             ) : null}
             {!compact && !hero ? (
               <span className="text-[0.7rem] text-slate-500">
-                {playerStateLongLabel(snapshot.state)}
+                {t(playerStateLongKey(snapshot.state))}
               </span>
             ) : null}
           </div>
@@ -336,13 +338,13 @@ export function PlayerPanel({
             <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-slate-800/35 pt-2.5 lg:mt-1.5 lg:gap-1.5 lg:border-t-0 lg:pt-1">
               <span
                 className="rounded-full border border-red-950/40 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-red-200/90"
-                title="Paper chain"
+                title={t("player.titlePaperChain")}
               >
                 P·{snapshot.paperStreak}
               </span>
               <span
                 className="rounded-full border border-slate-600/50 bg-black/30 px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-slate-200/90"
-                title="Scissors chain"
+                title={t("player.titleScissorsChain")}
               >
                 S·{snapshot.scissorsStreak}
               </span>
@@ -361,7 +363,7 @@ export function PlayerPanel({
         >
           <div className="rounded-lg border border-slate-700/70 bg-black/25 px-2 py-1.5 sm:px-3 sm:py-2">
             <p className="text-[0.55rem] font-bold uppercase tracking-widest text-slate-500 sm:text-[0.6rem]">
-              Paper chain
+              {t("player.paperChain")}
             </p>
             <p className="mt-0.5 text-base font-semibold tabular-nums text-amber-200/95 sm:text-lg">
               {snapshot.paperStreak}
@@ -369,7 +371,7 @@ export function PlayerPanel({
           </div>
           <div className="rounded-lg border border-slate-700/70 bg-black/25 px-2 py-1.5 sm:px-3 sm:py-2">
             <p className="text-[0.55rem] font-bold uppercase tracking-widest text-slate-500 sm:text-[0.6rem]">
-              Scissors chain
+              {t("player.scissorsChain")}
             </p>
             <p className="mt-0.5 text-base font-semibold tabular-nums text-amber-200/95 sm:text-lg">
               {snapshot.scissorsStreak}
@@ -380,7 +382,7 @@ export function PlayerPanel({
 
       {snapshot.state === "STAGGERED" && !compact && !hero ? (
         <p className="mt-4 rounded-xl border border-red-900/50 bg-red-950/35 px-3 py-2.5 text-sm text-red-100">
-          Break off: you skip this clash — stance recovers afterward unless staggered again.
+          {t("player.staggerBreakStandard")}
         </p>
       ) : null}
 
@@ -392,7 +394,7 @@ export function PlayerPanel({
               : "mt-2 rounded-lg border border-red-900/45 bg-red-950/30 px-2 py-1.5 text-[0.7rem] leading-snug text-red-100/95"
           }
         >
-          Skip this clash — stance recovers next round unless staggered again.
+          {t("player.staggerSkipCompact")}
         </p>
       ) : null}
 
@@ -406,7 +408,7 @@ export function PlayerPanel({
                 : "mt-4 text-center text-[0.7rem] font-bold uppercase tracking-[0.3em] text-amber-400/90"
           }
         >
-          Active duelist · commit maneuver
+          {t("player.activeCommit")}
         </p>
       ) : null}
     </article>

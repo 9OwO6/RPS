@@ -1,6 +1,7 @@
 "use client";
 
 import { BattleLog } from "@/components/BattleLog";
+import { useI18n } from "@/i18n/useI18n";
 import type { RoundLog } from "@/game/types";
 
 interface CollapsibleBattleLogProps {
@@ -18,6 +19,7 @@ export function CollapsibleBattleLog({
   tone = "default",
   className = "",
 }: CollapsibleBattleLogProps) {
+  const { t } = useI18n();
   const count = logs.length;
   const muted = tone === "muted";
 
@@ -40,7 +42,7 @@ export function CollapsibleBattleLog({
               : "text-left text-xs font-bold uppercase tracking-[0.28em] text-slate-400"
           }
         >
-          Chronicle
+          {t("chronicle.title")}
           <span className="ml-2 font-mono text-[0.6rem] font-semibold normal-case tracking-normal text-slate-600 md:text-[0.65rem]">
             ({count})
           </span>
@@ -52,8 +54,8 @@ export function CollapsibleBattleLog({
               : "shrink-0 rounded border border-slate-700/80 bg-black/30 px-2 py-1 text-[0.6rem] font-bold normal-case tracking-wide text-amber-500/90 group-open:text-amber-300"
           }
         >
-          <span className="group-open:hidden">Open</span>
-          <span className="hidden group-open:inline">Close</span>
+          <span className="group-open:hidden">{t("chronicle.open")}</span>
+          <span className="hidden group-open:inline">{t("chronicle.close")}</span>
         </span>
       </summary>
       <div

@@ -8,12 +8,14 @@ import { createOnlineSocket } from "@/online/socketClient";
 
 import { OnlineBattleScreen } from "@/components/OnlineBattleScreen";
 import { OnlineLobbyScreen } from "@/components/OnlineLobbyScreen";
+import { useI18n } from "@/i18n/useI18n";
 
 interface OnlineDuelRouteProps {
   onBackToStart: () => void;
 }
 
 export function OnlineDuelRoute({ onBackToStart }: OnlineDuelRouteProps) {
+  const { t } = useI18n();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [phase, setPhase] = useState<"lobby" | "battle">("lobby");
   const [battleCtx, setBattleCtx] = useState<{
@@ -46,7 +48,7 @@ export function OnlineDuelRoute({ onBackToStart }: OnlineDuelRouteProps) {
   if (!socket) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm text-slate-400">
-        Connecting to online server…
+        {t("online.bootLoading")}
       </div>
     );
   }
